@@ -30,7 +30,7 @@ public class SacreLib
 
         // level of log messages on console = >INFO
         for(Handler h: Logger.getLogger("").getHandlers())
-            h.setLevel(Level.FINE); // TODO: when being debugged LEVEL.FINE, when released LEVEL.INFO
+            h.setLevel(Level.WARNING); // TODO: when being debugged LEVEL.FINE, when released LEVEL.WARNING
         }
         catch (Exception e)
         {
