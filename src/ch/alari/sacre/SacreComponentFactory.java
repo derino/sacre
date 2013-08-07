@@ -45,10 +45,14 @@ public class SacreComponentFactory implements ComponentFactory
             return new Merge(cName);
         else if(cType.equalsIgnoreCase("merge3x1"))
             return new Merge3x1(cName);
+        else if(cType.equalsIgnoreCase("merge8x1"))
+            return new Merge8x1(cName);
         else if(cType.equalsIgnoreCase("intersection"))
             return new Intersection(cName);
         else if(cType.equalsIgnoreCase("fork"))
             return new Fork(cName);
+        else if(cType.equalsIgnoreCase("gnd"))
+            return new Ground(cName);
         else
             return null;
     }

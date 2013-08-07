@@ -205,10 +205,10 @@ public class Pipeline implements Runnable
     {
         for(String prevComp: prevComps)
         {
-            Port portPrevComp = pComps.get(prevComp).nextPortToConnect(Port.DIR_TYPE_OUT);
-
             for(String newComp: newComps)
             {
+                Port portPrevComp = pComps.get(prevComp).nextPortToConnect(Port.DIR_TYPE_OUT);
+
                 Port portNewComp = pComps.get(newComp).nextPortToConnect(Port.DIR_TYPE_IN);
                 
                 BlockingQueue q = new LinkedBlockingQueue();
@@ -222,6 +222,7 @@ public class Pipeline implements Runnable
 
                     portPrevComp.connect(q);
                     portNewComp.connect(q);
+                    SacreLib.logger.log(Level.FINE, "compatible ports connected: " + portPrevComp.getName() + " <-> " + portNewComp.getName() );
                 }
                 catch(ClassCastException cce)
                 {
