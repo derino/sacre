@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -23,7 +24,7 @@ import java.util.logging.Level;
  *
  * @author onur
  */
-public class Pipeline implements Runnable 
+public class Pipeline implements Callable<Object> 
 {
     private ExecutorService e;
     
@@ -254,9 +255,11 @@ public class Pipeline implements Runnable
         }
     }
     
-    public void run()
+    public Object call()
     {
         state = State.RUNNING;
+        Object pipelineResult = null;
+        
         try
         {
             e = Executors.newCachedThreadPool();
@@ -275,16 +278,19 @@ public class Pipeline implements Runnable
             //boolean allDone = false;
             //while(!allDone)
             //{
+            
                 for(String s: fMap.keySet())
                 {
                     SacreLib.logger.fine("Thread " + s);
                     try
                     {
-                        if( fMap.get(s).get() == null)
+                        Object res = fMap.get(s).get();
+                        
+                        if( res != null)
                         {
-
-                            SacreLib.logger.fine("Thread(" + s + ") executed successfully!");
+                            pipelineResult = res;
                         }
+                        SacreLib.logger.fine("Thread(" + s + ") executed successfully!");
                     }
                     catch(ExecutionException ee)
                     {
@@ -297,11 +303,12 @@ public class Pipeline implements Runnable
                     SacreLib.logger.fine("Thread " + s);
                     try
                     {
-                        if( fMap.get(s).get() == null)
+                        Object res = fMap.get(s).get();
+                        if( res != null)
                         {
-
-                            SacreLib.logger.fine("Thread(" + s + ") executed successfully!");
+                            pipelineResult = res;
                         }
+                        SacreLib.logger.fine("Thread(" + s + ") executed successfully!");
                     }
                     catch(ExecutionException ee)
                     {
@@ -328,6 +335,8 @@ public class Pipeline implements Runnable
 
         state = State.STOPPED;
         e.shutdown();
+        
+        return pipelineResult;
     }
 
     // called by run and by adaptor after insertion of new components

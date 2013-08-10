@@ -53,6 +53,10 @@ public class SacreComponentFactory implements ComponentFactory
             return new Fork(cName);
         else if(cType.equalsIgnoreCase("gnd"))
             return new Ground(cName);
+        else if(cType.equalsIgnoreCase("apisink"))
+            return new ApiSink(cName);
+        else if(cType.equalsIgnoreCase("LimitFlt"))
+            return new LimitFilter(cName, params);
         else
             return null;
     }

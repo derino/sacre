@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
@@ -18,7 +18,7 @@ import java.util.logging.Level;
  *
  * @author onur
  */
-public abstract class Component implements Runnable 
+public abstract class Component implements Callable<Object> 
 {
     // instance name of the component
     private String name;
@@ -43,6 +43,10 @@ public abstract class Component implements Runnable
     protected State state;
     public enum State {NOT_STARTED, RUNNING, STOPPED, FLUSHED};
 
+    // The sink components can return an object as a result of the execution of the whole pipeline.
+    // This is helpful in order to use the sacre functionality as api-like functions.
+    protected Object result;
+    
     public Component(String name)
     {
         this.name = name;
@@ -118,7 +122,7 @@ public abstract class Component implements Runnable
         return "_instance" + uniqueInstanceID++;
     }
 
-    public void run()
+    public Object call()
     {
         state = State.RUNNING;
         
@@ -143,7 +147,7 @@ public abstract class Component implements Runnable
             {
                 SacreLib.logger.fine(type + "(instance name:" + name + ") thread interrupted.");
                 state = State.STOPPED; // not necessarily needed.
-                return;
+                return null;
             }
             catch(Exception ex)
             {
@@ -151,6 +155,7 @@ public abstract class Component implements Runnable
             }
         }
         SacreLib.logger.fine(type + "(instance name:" + name + ") thread finished.");
+        return result;
     }
 
     public abstract void task() throws InterruptedException, Exception;
