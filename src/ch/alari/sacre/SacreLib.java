@@ -5,6 +5,8 @@
 
 package ch.alari.sacre;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -38,4 +40,6 @@ public class SacreLib
           e.printStackTrace();
         }
     }
+    
+    public static List<ApiSinkListener> apiSinkListeners = new ArrayList<ApiSinkListener>();
 }

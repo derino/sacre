@@ -36,6 +36,7 @@ package ch.alari.sacre;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -44,9 +45,10 @@ import java.util.List;
  */
 public class ApiSink extends Component
 {
-    
+    private enum InteractionType {SYNCHRONOUS, ASYNCHRONOUS};
+    private InteractionType tip;
 
-    public ApiSink(String name)
+    public ApiSink(String name, Map<String, String> parameters)
     {
         super(name);
         setType("APISink");
@@ -57,6 +59,28 @@ public class ApiSink extends Component
         // After the component thread ends, result is returned to the Pipeline, 
         // which in turn returns it to the original pipeline runner when pipeline thread ends.
         result = (Object) new ArrayList<Token>();
+        
+        
+        if(parameters != null)
+        {
+            if( parameters.get("tip") != null )
+            {
+                if( parameters.get("tip").equals("asenkron") )
+                    tip = InteractionType.ASYNCHRONOUS;
+                else if( parameters.get("tip").equals("senkron") )
+                    tip = InteractionType.SYNCHRONOUS;
+                else
+                {
+                    tip = InteractionType.SYNCHRONOUS;
+                }
+            }
+            else
+            {
+                tip = InteractionType.SYNCHRONOUS;
+            }
+        }
+        else // default value
+            tip = InteractionType.SYNCHRONOUS;
     }
     
     public void task() throws InterruptedException, Exception
@@ -68,10 +92,22 @@ public class ApiSink extends Component
             if(t.isStop())
             {
                 state = State.STOPPED;
+                for(ApiSinkListener asl: SacreLib.apiSinkListeners)
+                {
+                    asl.pipelineFinished();
+                }                
             }
             else
             {
-                ((List<Token>)result).add(t);
+                if(tip == InteractionType.SYNCHRONOUS)
+                    ((List<Token>)result).add(t);
+                else // (tip == InteractionType.ASYNCHRONOUS)
+                {
+                    for(ApiSinkListener asl: SacreLib.apiSinkListeners)
+                    {
+                        asl.newToken(t);
+                    }
+                }
             }
         }
         
