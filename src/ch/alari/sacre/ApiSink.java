@@ -94,7 +94,7 @@ public class ApiSink extends Component
                 state = State.STOPPED;
                 for(ApiSinkListener asl: SacreLib.apiSinkListeners)
                 {
-                    asl.pipelineFinished();
+                    asl.pipelineFinished(t);
                 }                
             }
             else

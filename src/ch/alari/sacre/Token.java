@@ -71,4 +71,13 @@ public class Token
         else // type=STOP
             return "<STOP TOKEN />";
     }
+    
+    public String toHTMLString()
+    {
+        if(type == DATA)
+            return "<p>TOKEN</p>";
+        else // type=STOP
+            return "<p>STOP TOKEN</p>";
+    }
+    
 }

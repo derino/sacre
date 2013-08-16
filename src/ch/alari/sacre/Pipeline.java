@@ -49,7 +49,7 @@ public class Pipeline implements Callable<Object>
         pComps = new HashMap<String, Component>();
 
         state = State.STOPPED;
-
+        
         //BlockingQueue<Baslik> badiSrc_console = new LinkedBlockingQueue<Baslik>();
         //badiSrc = new YazarSrc(badiSrc_console);
         //console = new ConsoleSink(badiSrc_console);
@@ -169,7 +169,10 @@ public class Pipeline implements Callable<Object>
                     nameSpecified = true;
                 }
                 else
+                {
+                    value = SacreLib.unescapePipelineString(value);
                     params.put(key, value); // not adding 'name' to params because name is already stored with Component.name
+                }
             }
 
             if(pComps.get(cName) == null)
