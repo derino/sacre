@@ -43,11 +43,14 @@ public class SacreLib
         }
     }
     
-    public static List<ApiSinkListener> apiSinkListeners = new ArrayList<ApiSinkListener>();
+    private static int apiSinkUniqueKeyCounter = 0;
+            
+    public static Map<Integer, List<ApiSinkListener>> mapApiSinkListeners = new HashMap<Integer, List<ApiSinkListener>>();
     
     //private static final Map<String, String> specialWordsMap = new HashMap<String, String>();
     private static final String[][] specialWords = {
-        {"%%AMPERSAND%%", "&"},
+        {"%%AMPERSANDAMPSEMICOLON%%", "&amp;"}, // bu ustte
+        {"%%AMPERSAND%%", "&"}, // bu altta
         {"%%EXCLAMATION%%", "!"},
         {"%%EQUALS%%", "="},
         {"%%LEFT_PAREN%%", "["},
@@ -74,5 +77,33 @@ public class SacreLib
             str = str.replace(sw[0], sw[1]);
         }
         return str;
+    }
+    
+    public static synchronized int addApiSinkListener(ApiSinkListener apl)
+    {
+        addApiSinkListener(apiSinkUniqueKeyCounter++, apl);
+        return apiSinkUniqueKeyCounter-1;
+    }
+    
+    public static synchronized void addApiSinkListener(int apiSinkUniqueKey, ApiSinkListener apl)
+    {
+        Integer apiSinkUniqueKeyInteger = new Integer(apiSinkUniqueKey);
+        List<ApiSinkListener> apls = mapApiSinkListeners.get(apiSinkUniqueKeyInteger);
+        if(apls == null)
+        {
+            apls = new ArrayList<ApiSinkListener>();
+        }
+        apls.add(apl);
+        mapApiSinkListeners.put(apiSinkUniqueKeyInteger, apls);
+    }
+    
+    public static synchronized List<ApiSinkListener> getApiSinkListeners(int apiSinkUniqueKey)
+    {
+        return mapApiSinkListeners.get(new Integer(apiSinkUniqueKey));
+    }
+    
+    public static synchronized void clearApiSinkListeners(int apiSinkUniqueKey)
+    {
+        getApiSinkListeners(apiSinkUniqueKey).clear();
     }
 }

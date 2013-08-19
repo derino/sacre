@@ -47,7 +47,13 @@ public class ApiSink extends Component
 {
     private enum InteractionType {SYNCHRONOUS, ASYNCHRONOUS};
     private InteractionType tip;
+    private int uniqueKey;
 
+    public void setUniqueKey(int uniqueKey)
+    {
+        this.uniqueKey = uniqueKey;
+    }
+    
     public ApiSink(String name, Map<String, String> parameters)
     {
         super(name);
@@ -92,10 +98,14 @@ public class ApiSink extends Component
             if(t.isStop())
             {
                 state = State.STOPPED;
-                for(ApiSinkListener asl: SacreLib.apiSinkListeners)
+                if(tip == InteractionType.ASYNCHRONOUS)
                 {
-                    asl.pipelineFinished(t);
-                }                
+                    for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
+                    {
+                        asl.pipelineFinished(t);
+                    }        
+                    SacreLib.clearApiSinkListeners(uniqueKey);
+                }
             }
             else
             {
@@ -103,7 +113,7 @@ public class ApiSink extends Component
                     ((List<Token>)result).add(t);
                 else // (tip == InteractionType.ASYNCHRONOUS)
                 {
-                    for(ApiSinkListener asl: SacreLib.apiSinkListeners)
+                    for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
                     {
                         asl.newToken(t);
                     }

@@ -40,12 +40,29 @@ public class Pipeline implements Callable<Object>
     private ConcurrentMap<String, Future<?>> fMap;
     //private Collection<Future<?>> fList;
 
+    // apisink bileseni yaratilirken bu id kullaniliyor. bu id'li apilistenerlari notify ediyor.
+    private int apiSinkUniqueKey;
+    
     //private YazarSrc badiSrc;
     //private ConsoleSink console;
             
     public Pipeline(ComponentFactory cf)
     {
         this.cf = cf;
+        this.apiSinkUniqueKey = -1; // i.e. not set
+        pComps = new HashMap<String, Component>();
+
+        state = State.STOPPED;
+        
+        //BlockingQueue<Baslik> badiSrc_console = new LinkedBlockingQueue<Baslik>();
+        //badiSrc = new YazarSrc(badiSrc_console);
+        //console = new ConsoleSink(badiSrc_console);
+    }
+    
+    public Pipeline(ComponentFactory cf, int apiSinkUniqueKey)
+    {
+        this.cf = cf;
+        this.apiSinkUniqueKey = apiSinkUniqueKey;
         pComps = new HashMap<String, Component>();
 
         state = State.STOPPED;
@@ -197,6 +214,12 @@ public class Pipeline implements Callable<Object>
     {
         // first try the SacreComponentFactory
         Component c = SacreComponentFactory.instance().create(cType, cName, params);
+        
+        // special case of apisink
+        if(c instanceof ApiSink)
+        {
+            ((ApiSink)c).setUniqueKey(apiSinkUniqueKey);
+        }
         // then the external
         if(c == null)
         {
