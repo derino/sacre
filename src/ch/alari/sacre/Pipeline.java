@@ -134,6 +134,16 @@ public class Pipeline implements Callable<Object>
             }
         }
 
+        // apisink'e pipeline'i vermek gerekiyor. (ssgpp-webui'de pagination icin geldi bu.)
+        for(Component c: pComps.values())
+        {
+            // special case of apisink
+            if(c instanceof ApiSink)
+            {
+                ((ApiSink)c).setPipelineStr(pStr);
+            }
+        }
+        
         SacreLib.logger.fine(pComps.toString());
     }
  

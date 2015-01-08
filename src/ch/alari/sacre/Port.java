@@ -104,6 +104,11 @@ public class Port<T>
         return q != null;
     }
     
+    public void disconnect()
+    {
+        q = null;
+    }
+    
     public String getName()
     {
         return name;

@@ -5,7 +5,13 @@
 
 package ch.alari.sacre;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,9 +26,12 @@ public class SacreComponentFactory implements ComponentFactory
     // singleton
     private static SacreComponentFactory instance = new SacreComponentFactory();
 
+    private PluginManager pluginManager;
+    
     private SacreComponentFactory()
     {
-
+        pluginManager = new PluginManager();
+        pluginManager.loadPlugins();
     }
 
     public static ComponentFactory instance()
@@ -51,6 +60,8 @@ public class SacreComponentFactory implements ComponentFactory
             return new Intersection(cName);
         else if(cType.equalsIgnoreCase("fork"))
             return new Fork(cName);
+        else if(cType.equalsIgnoreCase("fork1x3"))
+            return new Fork1x3(cName);
         else if(cType.equalsIgnoreCase("gnd"))
             return new Ground(cName);
         else if(cType.equalsIgnoreCase("apisink"))
@@ -58,6 +69,8 @@ public class SacreComponentFactory implements ComponentFactory
         else if(cType.equalsIgnoreCase("LimitFlt"))
             return new LimitFilter(cName, params);
         else
-            return null;
+        {
+            return pluginManager.create(cType, cName, params);
+        }
     }
 }

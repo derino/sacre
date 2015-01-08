@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author onur
  */
-public class Token
+public class Token implements Cloneable
 {
     public static final int STOP = 1;
     public static final int DATA = 2;
@@ -80,4 +80,12 @@ public class Token
             return "<p>STOP TOKEN</p>";
     }
     
+    @Override
+    public Object clone()
+    {
+        Token t = new Token();
+        t.type = this.type;
+        t.tags = new LinkedHashSet<String>(this.tags);
+        return t;
+    }
 }

@@ -49,9 +49,17 @@ public class ApiSink extends Component
     private InteractionType tip;
     private int uniqueKey;
 
+    private String pipelineStr;
+    private boolean pipelineNotificationDone = false;
+    
     public void setUniqueKey(int uniqueKey)
     {
         this.uniqueKey = uniqueKey;
+    }
+    
+    public void setPipelineStr(String pipelineStr)
+    {
+        this.pipelineStr = pipelineStr;
     }
     
     public ApiSink(String name, Map<String, String> parameters)
@@ -91,6 +99,18 @@ public class ApiSink extends Component
     
     public void task() throws InterruptedException, Exception
     {
+        // notify the listeners about pipelineStr before execution just for once.
+        if(!pipelineNotificationDone && tip == InteractionType.ASYNCHRONOUS)
+        {
+            for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
+            {
+                //SacreLib.logger.warning("apisink notified pStr: " + pipelineStr);
+                asl.setPipelineString(pipelineStr);
+            }
+            pipelineNotificationDone = true;
+        }
+        
+        
         Token t = (Token)port("in").take();
         
         if(t != null)
