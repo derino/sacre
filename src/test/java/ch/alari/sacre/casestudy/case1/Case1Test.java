@@ -92,7 +92,7 @@ public class Case1Test {
     /**
      * Test of pipeline adapting
      */
-    //@Ignore
+    @Ignore
     @Test
     public void testExecAdapt()
     {

@@ -134,7 +134,6 @@ public class PluginManager implements ComponentFactory {
         BufferedReader br = null;
 
         try {
-
                 String sCurrentLine;
 
                 br = new BufferedReader(new FileReader(dosya));
@@ -156,7 +155,7 @@ public class PluginManager implements ComponentFactory {
                 }
 
         } catch (FileNotFoundException e) {
-            SacreLib.logger.log(Level.WARNING, dosya + " dosyası bulunamadı.");
+            SacreLib.logger.log(Level.FINE, dosya + " dosyası bulunamadı.");
         }
         catch (IOException e) {
             SacreLib.logger.log(Level.WARNING, dosya + " dosyasının okunması sırasında bir hata oluştu.");

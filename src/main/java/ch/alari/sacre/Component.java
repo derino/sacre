@@ -60,7 +60,7 @@ public abstract class Component implements Callable<Object>
      *
      * @param <T>
      * @param portName
-     * @return Port object with specified name
+     * @return Port object with specified name. null if portName doesn't exist.
      */
     protected <T> Port<T> port(String portName)
     {
