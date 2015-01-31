@@ -54,7 +54,7 @@ public class Token implements Cloneable
     {
         return tags;
     }
-    
+        
     @Override
     public String toString()
     {

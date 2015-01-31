@@ -34,9 +34,6 @@
 
 package ch.alari.sacre;
 
-import ch.alari.sacre.Component;
-import ch.alari.sacre.Port;
-import ch.alari.sacre.Token;
 import java.util.Map;
 
 /**
@@ -45,6 +42,9 @@ import java.util.Map;
  */
 public class LimitFilter extends Component 
 {
+    protected InPort<Token> in;
+    protected OutPort<Token> out;
+    
     protected boolean initSuccess;
     
     private long limit;
@@ -55,8 +55,8 @@ public class LimitFilter extends Component
         super(name);
         setType("LimitFlt");
         
-        addPort(new Port<Token>(Token.class, "in", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "out", Port.DIR_TYPE_OUT));
+        in = new InPort<>(this);
+        out = new OutPort<>(this);
                 
         initSuccess = true;
         
@@ -80,15 +80,15 @@ public class LimitFilter extends Component
     {
         if(!initSuccess)
         {
-            port("out").put(new Token(Token.STOP));
+            out.put(new Token(Token.STOP));
             state = State.STOPPED;
             throw new InterruptedException();
         }
         
-        Token curr = (Token)port("in").take();
+        Token curr = in.take();
         if(curr.isStop())
         {
-            port("out").put(new Token(Token.STOP));
+            out.put(new Token(Token.STOP));
             state = State.STOPPED;
             return;
         }
@@ -97,7 +97,7 @@ public class LimitFilter extends Component
         // baslik olarak *xxx*xxx* formati girilebilir.
         if ( ++count <= limit )
         {
-            port("out").put(curr);
+            out.put(curr);
         }
     }
 }

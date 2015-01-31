@@ -5,6 +5,9 @@
 
 package ch.alari.sacre;
 
+import ch.alari.sacre.annotation.PortType;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -45,7 +49,17 @@ public class Pipeline implements Callable<Object>
     
     //private YazarSrc badiSrc;
     //private ConsoleSink console;
-            
+
+    public Pipeline()
+    {
+        this.cf = null;
+        this.apiSinkUniqueKey = -1; // i.e. not set
+        pComps = new HashMap<String, Component>();
+
+        state = State.STOPPED;
+    }
+
+    
     public Pipeline(ComponentFactory cf)
     {
         this.cf = cf;
@@ -231,7 +245,7 @@ public class Pipeline implements Callable<Object>
             ((ApiSink)c).setUniqueKey(apiSinkUniqueKey);
         }
         // then the external
-        if(c == null)
+        if(c == null && cf != null)
         {
             c = cf.create(cType, cName, params);
         }
@@ -244,51 +258,113 @@ public class Pipeline implements Callable<Object>
         {
             for(String newComp: newComps)
             {
-                Port portPrevComp = pComps.get(prevComp).nextPortToConnect(Port.DIR_TYPE_OUT);
+                OutPort portPrevComp = pComps.get(prevComp).nextOutPortToConnect();
 
-                Port portNewComp = pComps.get(newComp).nextPortToConnect(Port.DIR_TYPE_IN);
+                InPort portNewComp = pComps.get(newComp).nextInPortToConnect();
                 
-                BlockingQueue q = new LinkedBlockingQueue();
-
-                // source port's type should be a subtype of the sink port's type
-                try
+                String portTypePrev = getPortTypeOfComponentsOutPort( pComps.get(prevComp), portPrevComp);
+                String portTypeNew = getPortTypeOfComponentsInPort( pComps.get(newComp), portNewComp);
+                boolean arePortsCompatible;
+                if(portTypePrev == null || portTypeNew == null )
+                    arePortsCompatible = false;
+                else
                 {
-                    // TODO: the example below doesn't work with the logic: "source port's type should be a subtype of the sink port's type"
-                    // badiknk ! fork ! görselbtk & başlıkgirdileri [name=bg]; bg ! görselbtk
-                    //Class castedClass = portPrevComp.getPortDataType().asSubclass(portNewComp.getPortDataType());
-
-                    portPrevComp.connect(q);
-                    portNewComp.connect(q);
-                    SacreLib.logger.log(Level.FINE, "compatible ports connected: " + portPrevComp.getName() + " <-> " + portNewComp.getName() );
+                    arePortsCompatible = true;
+                    try
+                    {
+                        // if the previous output port has a token type that is a subclass of 
+                        // the token of the next input port, then they are compatible.
+                        Class.forName(portTypePrev).asSubclass(Class.forName(portTypeNew));
+                        //SacreLib.logger.log(Level.FINE, "dest port type subclass of source port type: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">"  );
+                    }
+                    catch(ClassCastException cce)
+                    {
+                        arePortsCompatible = false;
+                    } catch (ClassNotFoundException ex) {
+                        ex.printStackTrace();
+                        System.exit(-1);
+                    }
                 }
-                catch(ClassCastException cce)
+                
+                if(arePortsCompatible) //if( portTypePrev.equals(portTypeNew) )
                 {
-                    // TODO: incompatible ports trying to be connected. throw an exception
-                    SacreLib.logger.log(Level.SEVERE, "incompatible ports trying to be connected: " + portPrevComp.getPortDataType() + " <-> " + portNewComp.getPortDataType(), new Exception() );
-                }
-
-                /*
-                // Doesn't handle the case where a Frame type is connected to a Token type.
-                if(portPrevComp.getPortDataType().equals( portNewComp.getPortDataType() ))
-                {
-                    portPrevComp.connect(q);
-                    portNewComp.connect(q);
+                    portPrevComp.connect(portNewComp);
+                    SacreLib.logger.log(Level.FINE, "compatible ports connected: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">" );
                 }
                 else
                 {
-                    // TODO: incompatible ports trying to be connected
-                    SacreLib.logger.log(Level.SEVERE, "incompatible ports trying to be connected: " + portPrevComp.getPortDataType() + " <-> " + portNewComp.getPortDataType(), new Exception() );
-                }*/
+                    SacreLib.logger.log(Level.SEVERE, "attempted to connect incompatible ports: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">" );
+                    System.exit(-1);
+                }
                 
-                /*BlockingQueue q = new LinkedBlockingQueue();
-                pComps.get(prevComp)
-                        .nextPortToConnect(Port.DIR_TYPE_OUT)
-                            .connect(q);
-                pComps.get(newComp)
-                        .nextPortToConnect(Port.DIR_TYPE_IN)
-                            .connect(q);*/
             }
         }
+    }
+
+    private String getPortTypeOfComponentsOutPort(Component comp, OutPort port) throws SecurityException, IllegalArgumentException {
+        Class<?> c = comp.getClass();
+        //System.out.println("class: " + c.getName());
+        Field[] fields = c.getDeclaredFields();
+        for (Field f : fields) {
+            if (f.getType().getSimpleName().equals("OutPort")) {
+                //System.out.println(f.getName() + ": " + f.getType());
+                f.setAccessible(true);
+                try {
+                    if (f.get(comp).equals(port)) {
+                        //System.out.println("generic type: " + f.getGenericType().getTypeName());
+                        String portType = f.getGenericType().getTypeName(); // ch.alari.sacre.OutPort<ch.alari.sacre.TextToken>
+                        // extract <...>
+                        int beg = portType.lastIndexOf('<');
+                        String tokenType = "java.lang.Object";
+                        if(beg != -1) // ch.alari.sacre.OutPort, may be defined as such. then tokenType="java.lang.Object"
+                            tokenType = portType.substring( beg+1, portType.lastIndexOf('>') );
+                        return tokenType;
+//                        PortType anno = f.getAnnotation(PortType.class);
+//                        if(anno!=null)
+//                        {
+//                            System.out.println("anno: " + anno.value());
+//                            return anno.value();
+//                        }
+//                        else
+//                            return null;
+                    }
+                }catch(IllegalAccessException iae) { iae.printStackTrace();}
+            }
+        }
+        return null;
+    }
+    
+    private String getPortTypeOfComponentsInPort(Component comp, InPort port) throws SecurityException, IllegalArgumentException {
+        Class<?> c = comp.getClass();
+        //System.out.println("class: " + c.getName());
+        Field[] fields = c.getDeclaredFields();
+        for (Field f : fields) {
+            if (f.getType().getSimpleName().equals("InPort")) {
+                //System.out.println(f.getName() + ": " + f.getType());
+                f.setAccessible(true);
+                try {
+                    if (f.get(comp).equals(port)) {
+                        //System.out.println("generic type: " + f.getGenericType().getTypeName());
+                        String portType = f.getGenericType().getTypeName(); // ch.alari.sacre.InPort<ch.alari.sacre.TextToken>
+                        // extract <...>
+                        int beg = portType.lastIndexOf('<');
+                        String tokenType = "java.lang.Object";
+                        if(beg != -1) // ch.alari.sacre.InPort, may be defined as such. then tokenType="java.lang.Object"
+                            tokenType = portType.substring( beg+1, portType.lastIndexOf('>') );
+                        return tokenType;
+//                        PortType anno = f.getAnnotation(PortType.class);
+//                        if(anno != null)
+//                        {
+//                            System.out.println("anno: " + anno.value());
+//                            return anno.value();
+//                        }
+//                        else
+//                            return null;
+                    }
+                }catch(IllegalAccessException iae) { iae.printStackTrace();}
+            }
+        }
+        return null;
     }
     
     public Object call()

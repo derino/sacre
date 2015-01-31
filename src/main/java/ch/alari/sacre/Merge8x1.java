@@ -39,8 +39,14 @@ package ch.alari.sacre;
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
  */
-public class Merge8x1 extends Component
+public class Merge8x1 extends Merge3x1
 {
+    protected InPort<Token> in4;
+    protected InPort<Token> in5;
+    protected InPort<Token> in6;
+    protected InPort<Token> in7;
+    protected InPort<Token> in8;
+    
     boolean in1Live = true, in2Live = true, in3Live = true, in4Live = true, in5Live = true, in6Live = true, in7Live = true, in8Live = true;
 
     public Merge8x1(String name)
@@ -48,120 +54,117 @@ public class Merge8x1 extends Component
         super(name);
         setType("Merge8x1");
         
-        addPort(new Port<Token>(Token.class, "in1", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in2", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in3", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in4", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in5", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in6", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in7", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in8", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "out", Port.DIR_TYPE_OUT));
+        in4 = new InPort<>(this);
+        in5 = new InPort<>(this);
+        in6 = new InPort<>(this);
+        in7 = new InPort<>(this);
+        in8 = new InPort<>(this);
     }
     
+    @Override
     public void task() throws InterruptedException, Exception
     {
         //while(true)
         //{//TODO: how to do it with generics to avoid casting
         if(in1Live)
         {
-            Token b1 = (Token)port("in1").take(); // TODO: poll() makes more sense but cpu-hungry
+            Token b1 = in1.take(); // TODO: poll() makes more sense but cpu-hungry
             if(b1 != null)
             {
                 if(b1.isStop())
                     in1Live = false;
                 else
-                    port("out").put(b1);
+                    out.put(b1);
             }
         }
 
         if(in2Live)
         {
-            Token b2 = (Token)port("in2").take(); // poll() makes more sense but cpu-hungry
+            Token b2 = in2.take(); // poll() makes more sense but cpu-hungry
             if(b2 != null)
             {
                 if(b2.isStop())
                     in2Live = false;
                 else
-                    port("out").put(b2);
+                    out.put(b2);
             }
         }
 
         if(in3Live)
         {
-            Token b3 = (Token)port("in3").take(); // poll() makes more sense but cpu-hungry
+            Token b3 = in3.take(); // poll() makes more sense but cpu-hungry
             if(b3 != null)
             {
                 if(b3.isStop())
                     in3Live = false;
                 else
-                    port("out").put(b3);
+                    out.put(b3);
             }
         }
         
         if(in4Live)
         {
-            Token b4 = (Token)port("in4").take(); // poll() makes more sense but cpu-hungry
+            Token b4 = in4.take(); // poll() makes more sense but cpu-hungry
             if(b4 != null)
             {
                 if(b4.isStop())
                     in4Live = false;
                 else
-                    port("out").put(b4);
+                    out.put(b4);
             }
         }
         
         if(in5Live)
         {
-            Token b5 = (Token)port("in5").take(); // poll() makes more sense but cpu-hungry
+            Token b5 = in5.take(); // poll() makes more sense but cpu-hungry
             if(b5 != null)
             {
                 if(b5.isStop())
                     in5Live = false;
                 else
-                    port("out").put(b5);
+                    out.put(b5);
             }
         }
         
         if(in6Live)
         {
-            Token b6 = (Token)port("in6").take(); // poll() makes more sense but cpu-hungry
+            Token b6 = in6.take(); // poll() makes more sense but cpu-hungry
             if(b6 != null)
             {
                 if(b6.isStop())
                     in6Live = false;
                 else
-                    port("out").put(b6);
+                    out.put(b6);
             }
         }
         
         if(in7Live)
         {
-            Token b7 = (Token)port("in7").take(); // poll() makes more sense but cpu-hungry
+            Token b7 = in7.take(); // poll() makes more sense but cpu-hungry
             if(b7 != null)
             {
                 if(b7.isStop())
                     in7Live = false;
                 else
-                    port("out").put(b7);
+                    out.put(b7);
             }
         }
         
         if(in8Live)
         {
-            Token b8 = (Token)port("in8").take(); // poll() makes more sense but cpu-hungry
+            Token b8 = in8.take(); // poll() makes more sense but cpu-hungry
             if(b8 != null)
             {
                 if(b8.isStop())
                     in8Live = false;
                 else
-                    port("out").put(b8);
+                    out.put(b8);
             }
         }
         
         if(!in1Live && !in2Live && !in3Live && !in4Live && !in5Live && !in6Live && !in7Live && !in8Live)
         {
-            port("out").put(new Token(Token.STOP));
+            out.put(new Token(Token.STOP));
             state = State.STOPPED;
             return;
         }

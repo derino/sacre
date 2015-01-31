@@ -43,6 +43,10 @@ import java.util.List;
  */
 public class Intersection extends Component 
 {
+    protected InPort<Token> in1;
+    protected InPort<Token> in2;
+    protected OutPort<Token> out;
+    
     List<Token> historyIn1 = new ArrayList<Token>();
     List<Token> historyIn2 = new ArrayList<Token>();
     boolean in1Live=true, in2Live=true;
@@ -52,9 +56,9 @@ public class Intersection extends Component
         super(name);
         setType("Intersection");
         
-        addPort(new Port<Token>(Token.class, "in1", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in2", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "out", Port.DIR_TYPE_OUT));
+        in1 = new InPort<>(this);
+        in2 = new InPort<>(this);
+        out = new OutPort<>(this);
     }
     
     public void task() throws InterruptedException, Exception
@@ -64,7 +68,7 @@ public class Intersection extends Component
 
         if(in1Live)
         {
-            Token b1 = (Token)port("in1").take(); // TODO: poll() makes more sense than take but CPU load is too much
+            Token b1 = in1.take(); // TODO: poll() makes more sense than take but CPU load is too much
             if( b1 != null )
             {
                 if(b1.isStop())
@@ -75,14 +79,14 @@ public class Intersection extends Component
                     historyIn1.add(b1);
                     // compare to in2history, if match write out
                     if( existsIn(historyIn2, b1) )
-                        port("out").put(b1);
+                        out.put(b1);
                 }
             }
         }
 
         if(in2Live)
         {
-            Token b2 = (Token)port("in2").take(); // TODO: poll() makes more sense than take but check CPU load
+            Token b2 = in2.take(); // TODO: poll() makes more sense than take but check CPU load
             if( b2 != null )
             {
                 if(b2.isStop())
@@ -93,14 +97,14 @@ public class Intersection extends Component
                     historyIn2.add(b2);
                     //compare to in1history, if match write out
                     if( existsIn(historyIn1, b2) )
-                        port("out").put(b2);
+                        out.put(b2);
                 }
             }
         }
 
         if(!in1Live && !in2Live)
         {
-            port("out").put(new Token(Token.STOP));
+            out.put(new Token(Token.STOP));
             state = State.STOPPED;
             return;
         }

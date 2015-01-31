@@ -45,6 +45,8 @@ import java.util.Map;
  */
 public class ApiSink extends Component
 {
+    private InPort<Token> in;
+    
     private enum InteractionType {SYNCHRONOUS, ASYNCHRONOUS};
     private InteractionType tip;
     private int uniqueKey;
@@ -67,7 +69,7 @@ public class ApiSink extends Component
         super(name);
         setType("APISink");
         
-        addPort(new Port<Token>(Token.class, "in", Port.DIR_TYPE_IN));
+        in = new InPort<>(this);
         
         // result is defined in Component. 
         // After the component thread ends, result is returned to the Pipeline, 
@@ -111,7 +113,7 @@ public class ApiSink extends Component
         }
         
         
-        Token t = (Token)port("in").take();
+        Token t = in.take();
         
         if(t != null)
         {

@@ -41,33 +41,36 @@ package ch.alari.sacre;
  */
 public class Fork extends Component
 {
+    protected InPort<Token> in;
+    protected OutPort<Token> out1;
+    protected OutPort<Token> out2;
     
     public Fork(String name)
     {
         super(name);
         setType("Fork");
         
-        addPort(new Port<Token>(Token.class, "in", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "out1", Port.DIR_TYPE_OUT));
-        addPort(new Port<Token>(Token.class, "out2", Port.DIR_TYPE_OUT));
+        in = new InPort<>(this);
+        out1 = new OutPort<>(this);
+        out2 = new OutPort<>(this);
     }
     
     public void task() throws InterruptedException, Exception
     {
-        Token t = (Token)port("in").take();
+        Token t = in.take();
         if(t != null)
         {
             if(t.isStop())
             {
-                port("out1").put(new Token(Token.STOP));
-                port("out2").put(new Token(Token.STOP));
+                out1.put(new Token(Token.STOP));
+                out2.put(new Token(Token.STOP));
                 state = State.STOPPED;
                 return;
             }
             else
             {
-                port("out1").put(t);
-                port("out2").put(t);
+                out1.put(t);
+                out2.put(t);
             }
         }
     }

@@ -29,15 +29,21 @@ public abstract class Component implements Callable<Object>
     // subclasses should initialize (if needed) from given params in their constructor.
     protected Map<String, Object> params;
     
-    // subclasses should set the port list of the component via addPort()
-    private List<Port<? extends Token>> ports;
+    // subclasses should set the port list of the component via addInPort()
+    private List<InPort<? extends Token>> inPorts;
+    
+    // subclasses should set the port list of the component via addOutPort()
+    private List<OutPort<? extends Token>> outPorts;
     
     // if name parameter is not given at pipeline construction time, a component instance automatically gets 
     // Type+uniqueInstanceID as its name.
     private static int uniqueInstanceID = 1;
 
-    // event queue: receives event like reconfigure, flush
-    protected LinkedBlockingQueue<Event> eventQueue;
+    public static int uniqueInPortID = 1;
+    public static int uniqueOutPortID = 1;
+    
+//    // event queue: receives event like reconfigure, flush
+//    protected LinkedBlockingQueue<Event> eventQueue;
 
     // execution state of the component
     protected State state;
@@ -46,13 +52,17 @@ public abstract class Component implements Callable<Object>
     // The sink components can return an object as a result of the execution of the whole pipeline.
     // This is helpful in order to use the sacre functionality as api-like functions.
     protected Object result;
+
     
+    public abstract void task() throws InterruptedException, Exception;
+
     public Component(String name)
     {
         this.name = name;
         params = new HashMap<String, Object>();
-        ports = new ArrayList<Port<? extends Token>>();
-        eventQueue = new LinkedBlockingQueue<Event>();
+        inPorts = new ArrayList<InPort<? extends Token>>();
+        outPorts = new ArrayList<OutPort<? extends Token>>();
+//        eventQueue = new LinkedBlockingQueue<Event>();
         state = State.NOT_STARTED;
     }
 
@@ -62,11 +72,27 @@ public abstract class Component implements Callable<Object>
      * @param portName
      * @return Port object with specified name. null if portName doesn't exist.
      */
-    protected <T> Port<T> port(String portName)
+    public <T extends Token> InPort<T> inPort(String portName)
     {
-        for(Port<? extends Token> p: ports)
+        for(InPort<? extends Token> p: inPorts)
             if(p.getName().equals(portName))
-                return (Port<T>) p;
+                return (InPort<T>) p;
+        
+        return null; // shouldn't happen
+    }
+    
+    /**
+     *
+     * @param <T>
+     * @param portName
+     * @return Port object with specified name. null if portName doesn't exist.
+     */
+    public <T extends Token> OutPort<T> outPort(String portName)
+    {
+        for(OutPort<? extends Token> p: outPorts)
+            if(p.getName().equals(portName))
+                return (OutPort<T>) p;
+        
         return null; // shouldn't happen
     }
     
@@ -92,15 +118,26 @@ public abstract class Component implements Callable<Object>
      * @param dirType: given directional type
      * @return the next unconnected port of given directional type
      */
-    public Port nextPortToConnect(int dirType)
+    public InPort<? extends Token> nextInPortToConnect()
     {
-        for(Port p: ports)
+        for(InPort<? extends Token> p: inPorts)
         {
-            if(!p.isConnected() && p.getDirType() == dirType)
+            if(!p.isConnected() )
                 return p;
         }
         return null; // shouldn't happen
     }
+
+    public OutPort<? extends Token> nextOutPortToConnect()
+    {
+        for(OutPort<? extends Token> p: outPorts)
+        {
+            if(!p.isConnected())
+                return p;
+        }
+        return null; // shouldn't happen
+    }
+    
     
     @Override
     public String toString()
@@ -128,13 +165,13 @@ public abstract class Component implements Callable<Object>
         
         while(state == State.RUNNING)
         {
-            // handle all the events in the eventQueue
-            Event e = eventQueue.poll();
-            while( e != null)
-            {
-                handleEvent(e);
-                e = eventQueue.poll();
-            }
+//            // handle all the events in the eventQueue
+//            Event e = eventQueue.poll();
+//            while( e != null)
+//            {
+//                handleEvent(e);
+//                e = eventQueue.poll();
+//            }
 
             // execute user task
             try
@@ -158,42 +195,41 @@ public abstract class Component implements Callable<Object>
         return result;
     }
 
-    public abstract void task() throws InterruptedException, Exception;
 
-    private void handleEvent(Event e)
-    {
-        SacreLib.logger.fine("Component " + name + " is handling event " + e);
-        if(e == Event.FLUSH)
-        {
-            // block all input ports
-            for(Port p: ports)
-            {
-                if(p.getDirType() == Port.DIR_TYPE_IN)
-                    p.setBlocked(true);
-                else // output ports
-                {
-                    p.addHook(new Hook()
-                                {
-                                    public boolean newToken(Object t)
-                                    {
-                                        if( ((Token)t).isStop() )
-                                        {
-                                            componentFlushed();
-                                            return false;
-                                        }
-                                        else
-                                            return true;
-                                    }
-                                });
-                }
-            }
-        }
-    }
-
-    public void sendEvent(Event e) throws InterruptedException
-    {
-        eventQueue.put(e);
-    }
+//    private void handleEvent(Event e)
+//    {
+//        SacreLib.logger.fine("Component " + name + " is handling event " + e);
+//        if(e == Event.FLUSH)
+//        {
+//            // block all input ports
+//            for(Port p: ports)
+//            {
+//                if(p.getDirType() == Port.DIR_TYPE_IN)
+//                    p.setBlocked(true);
+//                else // output ports
+//                {
+//                    p.addHook(new Hook()
+//                                {
+//                                    public boolean newToken(Object t)
+//                                    {
+//                                        if( ((Token)t).isStop() )
+//                                        {
+//                                            componentFlushed();
+//                                            return false;
+//                                        }
+//                                        else
+//                                            return true;
+//                                    }
+//                                });
+//                }
+//            }
+//        }
+//    }
+//
+//    public void sendEvent(Event e) throws InterruptedException
+//    {
+//        eventQueue.put(e);
+//    }
 
     protected void componentFlushed()
     {
@@ -211,19 +247,31 @@ public abstract class Component implements Callable<Object>
      * @param dirType
      * @return port list
      */
-    public List<Port<? extends Token>> getPorts()
+    public List<InPort<? extends Token>> getInPorts()
     {
-        return Collections.unmodifiableList(ports);
+        return Collections.unmodifiableList(inPorts);
         //return ports;
     }
 
     /**
+     * The list should be iteratable in the same order as nextPortToConnect().
+     * @param <T>
+     * @param dirType
+     * @return port list
+     */
+    public List<OutPort<? extends Token>> getOutPorts()
+    {
+        return Collections.unmodifiableList(outPorts);
+        //return ports;
+    }    
+    
+    /**
      * subclasses of Component should use this method to define their ports.
      * @param p
      */
-    protected void addPort(Port<? extends Token> p)
+    protected void addInPort(InPort<? extends Token> p)
     {
-        ports.add(p);
+        inPorts.add(p);
 
         // I'm not sure TODO: in order to remove from task() body the setting of the state to STOPPED
         // after sending a STOP token, for each output port, we add a hook which sets
@@ -231,4 +279,13 @@ public abstract class Component implements Callable<Object>
         // what if a STOP token on one port doesn't imply state to be STOPPED!
     }
     
+    protected void addOutPort(OutPort<? extends Token> p)
+    {
+        outPorts.add(p);
+
+        // I'm not sure TODO: in order to remove from task() body the setting of the state to STOPPED
+        // after sending a STOP token, for each output port, we add a hook which sets
+        // state to STOPPED. not so nice when there are multiple output ports.
+        // what if a STOP token on one port doesn't imply state to be STOPPED!
+    }
 }

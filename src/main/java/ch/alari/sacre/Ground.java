@@ -34,26 +34,25 @@
 
 package ch.alari.sacre;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
  */
 public class Ground extends Component 
 {
+    private InPort<Token> in;
+    
     public Ground(String name)
     {
         super(name);
         setType("GND");
         
-        addPort(new Port<Token>(Token.class, "in", Port.DIR_TYPE_IN));
+        in = new InPort<>(this);
     }
     
     public void task() throws InterruptedException, Exception
     {
-        Token t = (Token)port("in").take();
+        Token t = in.take();
         if( t != null )
         {
             if(t.isStop())

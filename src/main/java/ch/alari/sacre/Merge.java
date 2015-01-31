@@ -41,6 +41,10 @@ package ch.alari.sacre;
  */
 public class Merge extends Component
 {
+    protected InPort<Token> in1;
+    protected InPort<Token> in2;
+    protected OutPort<Token> out;
+    
     boolean in1Live = true, in2Live = true;
 
     public Merge(String name)
@@ -48,9 +52,9 @@ public class Merge extends Component
         super(name);
         setType("Merge");
         
-        addPort(new Port<Token>(Token.class, "in1", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "in2", Port.DIR_TYPE_IN));
-        addPort(new Port<Token>(Token.class, "out", Port.DIR_TYPE_OUT));
+        in1 = new InPort<>(this);
+        in2 = new InPort<>(this);
+        out = new OutPort<>(this);
     }
     
     public void task() throws InterruptedException, Exception
@@ -59,31 +63,31 @@ public class Merge extends Component
         //{//TODO: how to do it with generics to avoid casting
         if(in1Live)
         {
-            Token b1 = (Token)port("in1").take(); // TODO: poll() makes more sense but cpu-hungry
+            Token b1 = in1.take(); // TODO: poll() makes more sense but cpu-hungry
             if(b1 != null)
             {
                 if(b1.isStop())
                     in1Live = false;
                 else
-                    port("out").put(b1);
+                    out.put(b1);
             }
         }
 
         if(in2Live)
         {
-            Token b2 = (Token)port("in2").take(); // poll() makes more sense but cpu-hungry
+            Token b2 = in2.take(); // poll() makes more sense but cpu-hungry
             if(b2 != null)
             {
                 if(b2.isStop())
                     in2Live = false;
                 else
-                    port("out").put(b2);
+                    out.put(b2);
             }
         }
 
         if(!in1Live && !in2Live)
         {
-            port("out").put(new Token(Token.STOP));
+            out.put(new Token(Token.STOP));
             state = State.STOPPED;
             return;
         }
