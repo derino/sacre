@@ -70,6 +70,8 @@ public class SacreComponentFactory implements ComponentFactory
             return new LimitFilter(cName, params);
         else if(cType.equalsIgnoreCase("TestKnk"))
             return new TestSrc(cName, params);
+        else if(cType.equalsIgnoreCase("TestCvt"))
+            return new TestCvt(cName, params);
         else if(cType.equalsIgnoreCase("TestBtk"))
             return new TestSink(cName);
         else

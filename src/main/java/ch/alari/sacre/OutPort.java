@@ -7,6 +7,7 @@ package ch.alari.sacre;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 
 /**
  *
@@ -34,6 +35,10 @@ public class OutPort<T extends Token> extends Port<T>
     
     public void connect(InPort<T> in)
     {
+        if( isConnected() )
+        {
+            SacreLib.logger.log(Level.SEVERE, "attempting to reconnect already connected port: " + getName() + "(with " + in.getName() + ")");
+        }
         q = new LinkedBlockingQueue<T>();
         in.connect(q);
         connect(q);

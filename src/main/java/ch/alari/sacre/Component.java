@@ -39,8 +39,8 @@ public abstract class Component implements Callable<Object>
     // Type+uniqueInstanceID as its name.
     private static int uniqueInstanceID = 1;
 
-    public static int uniqueInPortID = 1;
-    public static int uniqueOutPortID = 1;
+    public int uniqueInPortID = 1;
+    public int uniqueOutPortID = 1;
     
 //    // event queue: receives event like reconfigure, flush
 //    protected LinkedBlockingQueue<Event> eventQueue;
