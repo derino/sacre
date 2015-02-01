@@ -28,6 +28,11 @@ public abstract class Component implements Callable<Object>
 
     // subclasses should initialize (if needed) from given params in their constructor.
     protected Map<String, Object> params;
+  
+    // implies component has been created with proper parameters
+    // this variable is true at the end of the constructor if the initilization is correct.
+    // otherwise the task is stopped right in the beginning of task()
+    protected boolean initSuccess;
     
     // subclasses should set the port list of the component via addInPort()
     private List<InPort<? extends Token>> inPorts;
@@ -60,6 +65,7 @@ public abstract class Component implements Callable<Object>
     {
         this.name = name;
         params = new HashMap<String, Object>();
+        initSuccess = true;
         inPorts = new ArrayList<InPort<? extends Token>>();
         outPorts = new ArrayList<OutPort<? extends Token>>();
 //        eventQueue = new LinkedBlockingQueue<Event>();
@@ -161,6 +167,21 @@ public abstract class Component implements Callable<Object>
 
     public Object call()
     {
+        if(!initSuccess)
+        {
+            try {
+                for(OutPort p: getOutPorts())
+                    p.put(new Token(Token.STOP));
+            } catch(InterruptedException iex)
+            {
+                SacreLib.logger.log(Level.SEVERE, "Error stopping components after " + type + "(instance name:" + name + ")", iex);
+            }
+            state = State.STOPPED;
+            //throw new InterruptedException();
+            SacreLib.logger.log(Level.SEVERE, "Error initializing component " + type + "(instance name:" + name + "). Check its parameters!");
+            return null;
+        }
+        
         state = State.RUNNING;
         
         while(state == State.RUNNING)

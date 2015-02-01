@@ -45,8 +45,6 @@ public class LimitFilter extends Component
     protected InPort<Token> in;
     protected OutPort<Token> out;
     
-    protected boolean initSuccess;
-    
     private long limit;
     private long count;
     
@@ -57,8 +55,6 @@ public class LimitFilter extends Component
         
         in = new InPort<>(this);
         out = new OutPort<>(this);
-                
-        initSuccess = true;
         
         count = 0;
         
@@ -72,19 +68,11 @@ public class LimitFilter extends Component
             }
         }
         else // default value
-            limit = 1;
-            
+            limit = 1;        
     }
     
     public void task() throws InterruptedException//, Exception
     {
-        if(!initSuccess)
-        {
-            out.put(new Token(Token.STOP));
-            state = State.STOPPED;
-            throw new InterruptedException();
-        }
-        
         Token curr = in.take();
         if(curr.isStop())
         {
