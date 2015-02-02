@@ -27,6 +27,11 @@ public class InPort<T extends Token> extends Port<T>
         this.stopped = false;
     }
 
+    /**
+     * 
+     * @return the next token in the stream, null if it is a STOP_TOKEN
+     * @throws InterruptedException 
+     */
     public T take() throws InterruptedException
     {
         T t; // T to be returned
@@ -35,8 +40,8 @@ public class InPort<T extends Token> extends Port<T>
         if(t.isStop())
         {
             this.stopped = true;
-            component.reachedEndOfStream(this); // normally throws InterruptedException
-            return null; // normally never reached
+            component.reachedEndOfStream(this); // for components with a single input port, normally calls stopAndExit()
+            return null; // never reached if single input port
         }
         else 
             return t;

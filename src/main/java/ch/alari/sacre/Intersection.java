@@ -49,8 +49,7 @@ public class Intersection extends Component
     
     List<Token> historyIn1 = new ArrayList<Token>();
     List<Token> historyIn2 = new ArrayList<Token>();
-    //boolean in1Live=true, in2Live=true;
-
+    
     public Intersection(String name)
     {
         super(name);
@@ -63,50 +62,25 @@ public class Intersection extends Component
     
     public void task() throws InterruptedException, Exception
     {
-        if(!in1.isStopped()) //(in1Live)
+        Token b1 = in1.take();
+        if(!in1.isStopped())
         {
-            Token b1 = in1.take();
-            if( b1 != null )
-            {
-//                if(b1.isStop())
-//                    in1Live =false;
-//                else
-//                {
-                    // write to in1history
-                    historyIn1.add(b1);
-                    // compare to in2history, if match write out
-                    if( existsIn(historyIn2, b1) )
-                        out.put(b1);
-//                }
-            }
+            // write to in1history
+            historyIn1.add(b1);
+            // compare to in2history, if match write out
+            if( existsIn(historyIn2, b1) )
+                out.put(b1);
         }
 
-        if(!in2.isStopped()) //(in2Live)
+        Token b2 = in2.take();
+        if(!in2.isStopped())
         {
-            Token b2 = in2.take();
-            if( b2 != null )
-            {
-//                if(b2.isStop())
-//                    in2Live =false;
-//                else
-//                {
-                    // write to in2history
-                    historyIn2.add(b2);
-                    //compare to in1history, if match write out
-                    if( existsIn(historyIn1, b2) )
-                        out.put(b2);
-//                }
-            }
+            // write to in2history
+            historyIn2.add(b2);
+            //compare to in1history, if match write out
+            if( existsIn(historyIn1, b2) )
+                out.put(b2);
         }
-
-//        if(!in1Live && !in2Live)
-//        {
-//            out.put(new Token(Token.STOP));
-//            state = State.STOPPED;
-//            return;
-//        }
-
-        //} // /end while
     }
 
     private boolean existsIn(List<Token> history, Token b)

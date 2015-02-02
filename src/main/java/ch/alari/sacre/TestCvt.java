@@ -73,21 +73,12 @@ public class TestCvt extends Component
         }
         else
             alan = "baslikGirdiSayisi"; // default value
-        
-        //initSuccess = true;
     }
     
     public void task() throws InterruptedException//, Exception
     {
         Token t = in.take();
                 
-        /*if(t.isStop())
-        {
-            out.put(new Token(Token.STOP));
-            state = State.STOPPED;
-            return;
-        }*/
-        
         out.put(t);    
     }
     

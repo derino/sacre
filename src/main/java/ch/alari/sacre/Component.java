@@ -74,7 +74,7 @@ public abstract class Component implements Callable<Object>
      * Those components that produce their output when all their input is consumed should override this method
      * to write their results to their output ports.
      */
-    public void exiting(){}
+    public void exiting() throws InterruptedException {}
 
     /**
      * STOP_WHEN_ALL_STOP_TOKENS_RECEIVED (default): for most components (at first, thought to be only for Merge-like components, but in fact applies to all others.

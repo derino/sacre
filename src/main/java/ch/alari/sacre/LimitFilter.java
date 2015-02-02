@@ -73,19 +73,10 @@ public class LimitFilter extends Component
     
     public void task() throws InterruptedException//, Exception
     {
-        Token curr = in.take();
-//        if(curr.isStop())
-//        {
-//            out.put(new Token(Token.STOP));
-//            state = State.STOPPED;
-//            return;
-//        }
-        
+        Token t = in.take();
+
         // filtreleme
-        // baslik olarak *xxx*xxx* formati girilebilir.
         if ( ++count <= limit )
-        {
-            out.put(curr);
-        }
+            out.put(t);
     }
 }

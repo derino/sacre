@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import ch.alari.sacre.annotation.PortType;
+//import ch.alari.sacre.annotation.PortType;
 
 /**
  *
@@ -56,9 +56,8 @@ public class TestSrc extends Component
     public TestSrc(String name, Map<String, String> parameters)
     {
         super(name);
-        this.out = new OutPort<>(this);
         setType("TestKnk");
-        //addPort(new Port<Baslik>(Baslik.class, "out", Port.DIR_TYPE_OUT));
+        this.out = new OutPort<>(this);
         
         basliklar = new ArrayList<String>();
         
@@ -81,18 +80,11 @@ public class TestSrc extends Component
     @Override
     public void task() throws InterruptedException, Exception
     {
-        //if(params.get("adres") != null )
-        //    port("out").put( new Baslik((String)params.get("başlık"), (String)params.get("adres")) );
-        //else
-        
         for(String b: basliklar)
         {
-           // outPort("out").put( new TextToken(b) );
             out.put(new TextToken(b));
         }
         
-//        out.put( new TextToken(Token.STOP) );
-//        state = State.STOPPED;
         stopAndExit();
     }
 

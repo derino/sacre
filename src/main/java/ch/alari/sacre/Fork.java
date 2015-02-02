@@ -60,17 +60,5 @@ public class Fork extends Component
         Token t = in.take();
         out1.put(t);
         out2.put(t);
-//        if(t.isStop())
-//        {
-//            out1.put(new Token(Token.STOP));
-//            out2.put(new Token(Token.STOP));
-//            state = State.STOPPED;
-//            return;
-//        }
-//        else
-//        {
-//            out1.put(t);
-//            out2.put(t);
-//        }
     }
 }

@@ -52,14 +52,6 @@ public class Ground extends Component
     
     public void task() throws InterruptedException, Exception
     {
-        Token t = in.take();
-//        if( t != null )
-//        {
-//            if(t.isStop())
-//            {
-//                state = State.STOPPED;
-//                return;                
-//            }
-//        }
+        in.take();
     }
 }

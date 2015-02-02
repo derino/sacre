@@ -50,20 +50,12 @@ public class TestSink extends Component
         super(name);
         setType("TestBtk");
         in = new InPort<>(this);
-        //addPort(new Port<Token>(Token.class, "in", Port.DIR_TYPE_IN));
     }
     
     @Override
     public void task() throws InterruptedException, Exception
     {
-        //Token t = (Token)port("in").take(); //qIn.take();
-        Token t = in.take(); //qIn.take();
-        
-//        if(t.isStop())
-//        {
-//            state = State.STOPPED;
-//            return;
-//        }
+        Token t = in.take();
         System.out.println(t);
     }
 

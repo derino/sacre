@@ -64,109 +64,53 @@ public class Merge8x1 extends Merge3x1
     @Override
     public void task() throws InterruptedException, Exception
     {
-        //while(true)
-        //{//TODO: how to do it with generics to avoid casting
-        if(!in1.isStopped()) //(in1Live)
+        Token b1 = in1.take();
+        if(!in1.isStopped())
         {
-            Token b1 = in1.take(); // TODO: poll() makes more sense but cpu-hungry
-            if(b1 != null)
-            {
-//                if(b1.isStop())
-//                    in1Live = false;
-//                else
-                    out.put(b1);
-            }
+            out.put(b1);
         }
 
-        if(!in2.isStopped()) //(in2Live)
+        Token b2 = in2.take();
+        if(!in2.isStopped())
         {
-            Token b2 = in2.take(); // poll() makes more sense but cpu-hungry
-            if(b2 != null)
-            {
-//                if(b2.isStop())
-//                    in2Live = false;
-//                else
-                    out.put(b2);
-            }
+            out.put(b2);
         }
 
-        if(!in3.isStopped()) //(in3Live)
+        Token b3 = in3.take();
+        if(!in3.isStopped())
         {
-            Token b3 = in3.take(); // poll() makes more sense but cpu-hungry
-            if(b3 != null)
-            {
-//                if(b3.isStop())
-//                    in3Live = false;
-//                else
-                    out.put(b3);
-            }
-        }
-        if(!in4.isStopped()) //(in4Live)
-        {
-            Token b4 = in4.take(); // TODO: poll() makes more sense but cpu-hungry
-            if(b4 != null)
-            {
-//                if(b4.isStop())
-//                    in4Live = false;
-//                else
-                    out.put(b4);
-            }
-        }
-
-        if(!in5.isStopped()) //(in5Live)
-        {
-            Token b5 = in5.take(); // poll() makes more sense but cpu-hungry
-            if(b5 != null)
-            {
-//                if(b5.isStop())
-//                    in5Live = false;
-//                else
-                    out.put(b5);
-            }
-        }
-
-        if(!in6.isStopped()) //(in6Live)
-        {
-            Token b6 = in6.take(); // poll() makes more sense but cpu-hungry
-            if(b6 != null)
-            {
-//                if(b6.isStop())
-//                    in6Live = false;
-//                else
-                    out.put(b6);
-            }
-        }
-        if(!in7.isStopped()) //(in7Live)
-        {
-            Token b7 = in7.take(); // TODO: poll() makes more sense but cpu-hungry
-            if(b7 != null)
-            {
-//                if(b7.isStop())
-//                    in7Live = false;
-//                else
-                    out.put(b7);
-            }
-        }
-
-        if(!in8.isStopped()) //(in8Live)
-        {
-            Token b8 = in8.take(); // poll() makes more sense but cpu-hungry
-            if(b8 != null)
-            {
-//                if(b8.isStop())
-//                    in8Live = false;
-//                else
-                    out.put(b8);
-            }
+            out.put(b3);
         }
         
-//        if(!in1Live && !in2Live && !in3Live && !in4Live && !in5Live && !in6Live && !in7Live && !in8Live)
-//        {
-//            out.put(new Token(Token.STOP));
-//            state = State.STOPPED;
-//            return;
-//        }
-        //} // /end while
+        Token b4 = in4.take();
+        if(!in4.isStopped())
+        {
+            out.put(b4);
+        }
+
+        Token b5 = in5.take();
+        if(!in5.isStopped())
+        {
+            out.put(b5);
+        }
+
+        Token b6 = in6.take();
+        if(!in6.isStopped())
+        {
+            out.put(b6);
+        }
+        
+        Token b7 = in7.take();
+        if(!in7.isStopped())
+        {
+            out.put(b7);
+        }
+
+        Token b8 = in8.take();
+        if(!in8.isStopped())
+        {
+            out.put(b8);
+        }
     }
 
 }

@@ -55,51 +55,22 @@ public class Merge3x1 extends Merge
     
     public void task() throws InterruptedException, Exception
     {
-        //while(true)
-        //{//TODO: how to do it with generics to avoid casting
-        if(!in1.isStopped()) //(in1Live)
+        Token b1 = in1.take();
+        if(!in1.isStopped())
         {
-            Token b1 = in1.take(); // TODO: poll() makes more sense but cpu-hungry
-            if(b1 != null)
-            {
-//                if(b1.isStop())
-//                    in1Live = false;
-//                else
-                    out.put(b1);
-            }
+            out.put(b1);
         }
 
-        if(!in2.isStopped()) //(in2Live)
+        Token b2 = in2.take();
+        if(!in2.isStopped())
         {
-            Token b2 = in2.take(); // poll() makes more sense but cpu-hungry
-            if(b2 != null)
-            {
-//                if(b2.isStop())
-//                    in2Live = false;
-//                else
-                    out.put(b2);
-            }
+            out.put(b2);
         }
 
-        if(!in3.isStopped()) //(in3Live)
+        Token b3 = in3.take();
+        if(!in3.isStopped())
         {
-            Token b3 = in3.take(); // poll() makes more sense but cpu-hungry
-            if(b3 != null)
-            {
-//                if(b3.isStop())
-//                    in3Live = false;
-//                else
-                    out.put(b3);
-            }
+            out.put(b3);
         }
-        
-//        if(!in1Live && !in2Live && !in3Live)
-//        {
-//            out.put(new Token(Token.STOP));
-//            state = State.STOPPED;
-//            return;
-//        }
-        //} // /end while
     }
-
 }
