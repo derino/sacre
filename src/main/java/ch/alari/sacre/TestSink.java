@@ -34,87 +34,44 @@
 
 package ch.alari.sacre;
 
-import java.util.ArrayList;
-import java.util.List;
+//import ch.alari.sacre.annotation.PortType;
 
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
  */
-public class Intersection extends Component 
+public class TestSink extends Component 
 {
-    protected InPort<Token> in1;
-    protected InPort<Token> in2;
-    protected OutPort<Token> out;
-    
-    List<Token> historyIn1 = new ArrayList<Token>();
-    List<Token> historyIn2 = new ArrayList<Token>();
-    //boolean in1Live=true, in2Live=true;
-
-    public Intersection(String name)
+    //@PortType ("Token")
+    private InPort<Token> in;
+            
+    public TestSink(String name)
     {
         super(name);
-        setType("Intersection");
-        
-        in1 = new InPort<>(this);
-        in2 = new InPort<>(this);
-        out = new OutPort<>(this);
+        setType("TestBtk");
+        in = new InPort<>(this);
+        //addPort(new Port<Token>(Token.class, "in", Port.DIR_TYPE_IN));
     }
     
+    @Override
     public void task() throws InterruptedException, Exception
     {
-        if(!in1.isStopped()) //(in1Live)
-        {
-            Token b1 = in1.take();
-            if( b1 != null )
-            {
-//                if(b1.isStop())
-//                    in1Live =false;
-//                else
-//                {
-                    // write to in1history
-                    historyIn1.add(b1);
-                    // compare to in2history, if match write out
-                    if( existsIn(historyIn2, b1) )
-                        out.put(b1);
-//                }
-            }
-        }
-
-        if(!in2.isStopped()) //(in2Live)
-        {
-            Token b2 = in2.take();
-            if( b2 != null )
-            {
-//                if(b2.isStop())
-//                    in2Live =false;
-//                else
-//                {
-                    // write to in2history
-                    historyIn2.add(b2);
-                    //compare to in1history, if match write out
-                    if( existsIn(historyIn1, b2) )
-                        out.put(b2);
-//                }
-            }
-        }
-
-//        if(!in1Live && !in2Live)
+        //Token t = (Token)port("in").take(); //qIn.take();
+        Token t = in.take(); //qIn.take();
+        
+//        if(t.isStop())
 //        {
-//            out.put(new Token(Token.STOP));
 //            state = State.STOPPED;
 //            return;
 //        }
-
-        //} // /end while
+        System.out.println(t);
     }
 
-    private boolean existsIn(List<Token> history, Token b)
-    {
-        for(Token hb: history)
-            if(b.equals(hb))
-                return true;
-        
-        return false;
-    }
+//    /**
+//     * @return the in
+//     */
+//    public InPort<Token> getIn() {
+//        return in;
+//    }
+
 }

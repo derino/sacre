@@ -43,7 +43,7 @@ public class Merge3x1 extends Merge
 {
     protected InPort<Token> in3;
     
-    boolean in1Live = true, in2Live = true, in3Live = true;
+    //boolean in1Live = true, in2Live = true, in3Live = true;
 
     public Merge3x1(String name)
     {
@@ -57,48 +57,48 @@ public class Merge3x1 extends Merge
     {
         //while(true)
         //{//TODO: how to do it with generics to avoid casting
-        if(in1Live)
+        if(!in1.isStopped()) //(in1Live)
         {
             Token b1 = in1.take(); // TODO: poll() makes more sense but cpu-hungry
             if(b1 != null)
             {
-                if(b1.isStop())
-                    in1Live = false;
-                else
+//                if(b1.isStop())
+//                    in1Live = false;
+//                else
                     out.put(b1);
             }
         }
 
-        if(in2Live)
+        if(!in2.isStopped()) //(in2Live)
         {
             Token b2 = in2.take(); // poll() makes more sense but cpu-hungry
             if(b2 != null)
             {
-                if(b2.isStop())
-                    in2Live = false;
-                else
+//                if(b2.isStop())
+//                    in2Live = false;
+//                else
                     out.put(b2);
             }
         }
 
-        if(in3Live)
+        if(!in3.isStopped()) //(in3Live)
         {
             Token b3 = in3.take(); // poll() makes more sense but cpu-hungry
             if(b3 != null)
             {
-                if(b3.isStop())
-                    in3Live = false;
-                else
+//                if(b3.isStop())
+//                    in3Live = false;
+//                else
                     out.put(b3);
             }
         }
         
-        if(!in1Live && !in2Live && !in3Live)
-        {
-            out.put(new Token(Token.STOP));
-            state = State.STOPPED;
-            return;
-        }
+//        if(!in1Live && !in2Live && !in3Live)
+//        {
+//            out.put(new Token(Token.STOP));
+//            state = State.STOPPED;
+//            return;
+//        }
         //} // /end while
     }
 

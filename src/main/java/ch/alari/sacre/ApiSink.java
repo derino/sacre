@@ -102,6 +102,7 @@ public class ApiSink extends Component
     public void task() throws InterruptedException, Exception
     {
         // notify the listeners about pipelineStr before execution just for once.
+        // cannot be moved to the constructor because listeners are added only after the ApiSink component is created.
         if(!pipelineNotificationDone && tip == InteractionType.ASYNCHRONOUS)
         {
             for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
@@ -115,35 +116,58 @@ public class ApiSink extends Component
         
         Token t = in.take();
         
-        if(t != null)
+        if(tip == InteractionType.SYNCHRONOUS)
+            ((List<Token>)result).add(t);
+        else // (tip == InteractionType.ASYNCHRONOUS)
         {
-            if(t.isStop())
+            for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
             {
-                state = State.STOPPED;
-                if(tip == InteractionType.ASYNCHRONOUS)
-                {
-                    for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
-                    {
-                        asl.pipelineFinished(t);
-                    }        
-                    SacreLib.clearApiSinkListeners(uniqueKey);
-                }
-            }
-            else
-            {
-                if(tip == InteractionType.SYNCHRONOUS)
-                    ((List<Token>)result).add(t);
-                else // (tip == InteractionType.ASYNCHRONOUS)
-                {
-                    for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
-                    {
-                        asl.newToken(t);
-                    }
-                }
+                asl.newToken(t);
             }
         }
-        
 
+        
+//        if(t != null)
+//        {
+//            if(t.isStop())
+//            {
+//                state = State.STOPPED;
+//                if(tip == InteractionType.ASYNCHRONOUS)
+//                {
+//                    for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
+//                    {
+//                        asl.pipelineFinished(t);
+//                    }        
+//                    SacreLib.clearApiSinkListeners(uniqueKey);
+//                }
+//            }
+//            else
+//            {
+//                if(tip == InteractionType.SYNCHRONOUS)
+//                    ((List<Token>)result).add(t);
+//                else // (tip == InteractionType.ASYNCHRONOUS)
+//                {
+//                    for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
+//                    {
+//                        asl.newToken(t);
+//                    }
+//                }
+//            }
+//        }
+
+    }
+    
+    @Override
+    public void exiting()
+    {
+        if(tip == InteractionType.ASYNCHRONOUS)
+        {
+            for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
+            {
+                asl.pipelineFinished(new Token(Token.STOP));
+            }        
+            SacreLib.clearApiSinkListeners(uniqueKey);
+        }
     }
 
 }

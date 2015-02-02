@@ -34,87 +34,61 @@
 
 package ch.alari.sacre;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
  */
-public class Intersection extends Component 
+public class TestCvt extends Component 
 {
-    protected InPort<Token> in1;
-    protected InPort<Token> in2;
-    protected OutPort<Token> out;
+    private InPort<Token> in;
+    private OutPort<Token> out;
     
-    List<Token> historyIn1 = new ArrayList<Token>();
-    List<Token> historyIn2 = new ArrayList<Token>();
-    //boolean in1Live=true, in2Live=true;
-
-    public Intersection(String name)
+    private String alan; 
+    
+    public TestCvt(String name, Map<String, String> parameters)
     {
         super(name);
-        setType("Intersection");
-        
-        in1 = new InPort<>(this);
-        in2 = new InPort<>(this);
+        in = new InPort<>(this);
         out = new OutPort<>(this);
+        setType("TestCvt");
+        
+        if(parameters != null)
+        {
+            // alani al
+            if( parameters.get("alan") != null )
+            {
+                alan = parameters.get("alan");
+            }
+        }
+        else
+            alan = "baslikGirdiSayisi"; // default value
+        
+        //initSuccess = true;
     }
     
-    public void task() throws InterruptedException, Exception
+    public void task() throws InterruptedException//, Exception
     {
-        if(!in1.isStopped()) //(in1Live)
+        Token t = in.take();
+                
+        /*if(t.isStop())
         {
-            Token b1 = in1.take();
-            if( b1 != null )
-            {
-//                if(b1.isStop())
-//                    in1Live =false;
-//                else
-//                {
-                    // write to in1history
-                    historyIn1.add(b1);
-                    // compare to in2history, if match write out
-                    if( existsIn(historyIn2, b1) )
-                        out.put(b1);
-//                }
-            }
-        }
-
-        if(!in2.isStopped()) //(in2Live)
-        {
-            Token b2 = in2.take();
-            if( b2 != null )
-            {
-//                if(b2.isStop())
-//                    in2Live =false;
-//                else
-//                {
-                    // write to in2history
-                    historyIn2.add(b2);
-                    //compare to in1history, if match write out
-                    if( existsIn(historyIn1, b2) )
-                        out.put(b2);
-//                }
-            }
-        }
-
-//        if(!in1Live && !in2Live)
-//        {
-//            out.put(new Token(Token.STOP));
-//            state = State.STOPPED;
-//            return;
-//        }
-
-        //} // /end while
-    }
-
-    private boolean existsIn(List<Token> history, Token b)
-    {
-        for(Token hb: history)
-            if(b.equals(hb))
-                return true;
+            out.put(new Token(Token.STOP));
+            state = State.STOPPED;
+            return;
+        }*/
         
-        return false;
+        out.put(t);    
     }
+    
 }

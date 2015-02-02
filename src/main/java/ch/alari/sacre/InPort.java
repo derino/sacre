@@ -12,16 +12,34 @@ package ch.alari.sacre;
  */
 public class InPort<T extends Token> extends Port<T>
 {
+    /**
+     * the component that this port belongs to.
+     */
+    private Component component;
+    
+    private boolean stopped;
+    
     public InPort(Component c)
     {
         super(c.getName()+".inport"+c.uniqueInPortID++);
-        c.addInPort(this);
+        this.component = c;
+        this.component.addInPort(this);
+        this.stopped = false;
     }
 
     public T take() throws InterruptedException
     {
         T t; // T to be returned
         t = q.take();
+        
+        if(t.isStop())
+        {
+            this.stopped = true;
+            component.reachedEndOfStream(this); // normally throws InterruptedException
+            return null; // normally never reached
+        }
+        else 
+            return t;
 
 //        boolean tokenAllowedByHooks = true;
 //        for(Hook<T> h: hooks)
@@ -29,8 +47,13 @@ public class InPort<T extends Token> extends Port<T>
 //            tokenAllowedByHooks &= h.newToken(t);
 //        }
 //        if(tokenAllowedByHooks)
-            return t;
+//            return t;
 //        else
 //            return null;
+    }
+    
+    public boolean isStopped()
+    {
+        return stopped;
     }
 }

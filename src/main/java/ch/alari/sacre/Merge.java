@@ -45,7 +45,7 @@ public class Merge extends Component
     protected InPort<Token> in2;
     protected OutPort<Token> out;
     
-    boolean in1Live = true, in2Live = true;
+    //boolean in1Live = true, in2Live = true;
 
     public Merge(String name)
     {
@@ -61,36 +61,36 @@ public class Merge extends Component
     {
         //while(true)
         //{//TODO: how to do it with generics to avoid casting
-        if(in1Live)
+        if(!in1.isStopped()) //(in1Live)
         {
-            Token b1 = in1.take(); // TODO: poll() makes more sense but cpu-hungry
-            if(b1 != null)
+            Token b1 = in1.take();
+            if(b1 != null) // if this take() receives a STOP_TOKEN, then null is returned by take().
             {
-                if(b1.isStop())
-                    in1Live = false;
-                else
+            //    if(b1.isStop())
+            //        in1Live = false;
+            //    else
                     out.put(b1);
             }
         }
 
-        if(in2Live)
+        if(!in2.isStopped()) //(in2Live)
         {
             Token b2 = in2.take(); // poll() makes more sense but cpu-hungry
             if(b2 != null)
             {
-                if(b2.isStop())
-                    in2Live = false;
-                else
+//                if(b2.isStop())
+//                    in2Live = false;
+//                else
                     out.put(b2);
             }
         }
 
-        if(!in1Live && !in2Live)
-        {
-            out.put(new Token(Token.STOP));
-            state = State.STOPPED;
-            return;
-        }
+//        if(!in1Live && !in2Live)
+//        {
+//            out.put(new Token(Token.STOP));
+//            state = State.STOPPED;
+//            return;
+//        }
         //} // /end while
     }
 

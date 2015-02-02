@@ -36,85 +36,70 @@ package ch.alari.sacre;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import ch.alari.sacre.annotation.PortType;
 
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
  */
-public class Intersection extends Component 
+public class TestSrc extends Component
 {
-    protected InPort<Token> in1;
-    protected InPort<Token> in2;
-    protected OutPort<Token> out;
+    // add a getter for the port if you want to manually connect ports with type safety when creating pipelines.
+    //@PortType ("TextToken")
+    private OutPort<TextToken> out;
+    //private OutPort out;
     
-    List<Token> historyIn1 = new ArrayList<Token>();
-    List<Token> historyIn2 = new ArrayList<Token>();
-    //boolean in1Live=true, in2Live=true;
-
-    public Intersection(String name)
+    List<String> basliklar; // .tema biciminden dolayi boyle arrayli
+    
+    public TestSrc(String name, Map<String, String> parameters)
     {
         super(name);
-        setType("Intersection");
+        this.out = new OutPort<>(this);
+        setType("TestKnk");
+        //addPort(new Port<Baslik>(Baslik.class, "out", Port.DIR_TYPE_OUT));
         
-        in1 = new InPort<>(this);
-        in2 = new InPort<>(this);
-        out = new OutPort<>(this);
+        basliklar = new ArrayList<String>();
+        
+//        basliklar.add("deneme deneme tunceli");
+//        basliklar.add("deneme tunceli deneme");
+//        basliklar.add("tunceli deneme deneme");
+//        basliklar.add("dersim deneme deneme");
+//        basliklar.add("deneme deneme tunceli'de");
+//        basliklar.add("deneme tunceli'de deneme");
+//        basliklar.add("tunceli'de deneme deneme");
+//        basliklar.add("deneme deneme tuncelide");
+//        basliklar.add("deneme tuncelide deneme");
+//        basliklar.add("tuncelide deneme deneme");
+//        basliklar.add("deneme deneme detuncelide");
+//        basliklar.add("deneme detuncelide deneme");
+        basliklar.add("detuncelide deneme deneme");
+        basliklar.add("deneme de deneme `tunceli`!");
     }
     
+    @Override
     public void task() throws InterruptedException, Exception
     {
-        if(!in1.isStopped()) //(in1Live)
-        {
-            Token b1 = in1.take();
-            if( b1 != null )
-            {
-//                if(b1.isStop())
-//                    in1Live =false;
-//                else
-//                {
-                    // write to in1history
-                    historyIn1.add(b1);
-                    // compare to in2history, if match write out
-                    if( existsIn(historyIn2, b1) )
-                        out.put(b1);
-//                }
-            }
-        }
-
-        if(!in2.isStopped()) //(in2Live)
-        {
-            Token b2 = in2.take();
-            if( b2 != null )
-            {
-//                if(b2.isStop())
-//                    in2Live =false;
-//                else
-//                {
-                    // write to in2history
-                    historyIn2.add(b2);
-                    //compare to in1history, if match write out
-                    if( existsIn(historyIn1, b2) )
-                        out.put(b2);
-//                }
-            }
-        }
-
-//        if(!in1Live && !in2Live)
-//        {
-//            out.put(new Token(Token.STOP));
-//            state = State.STOPPED;
-//            return;
-//        }
-
-        //} // /end while
-    }
-
-    private boolean existsIn(List<Token> history, Token b)
-    {
-        for(Token hb: history)
-            if(b.equals(hb))
-                return true;
+        //if(params.get("adres") != null )
+        //    port("out").put( new Baslik((String)params.get("başlık"), (String)params.get("adres")) );
+        //else
         
-        return false;
+        for(String b: basliklar)
+        {
+           // outPort("out").put( new TextToken(b) );
+            out.put(new TextToken(b));
+        }
+        
+//        out.put( new TextToken(Token.STOP) );
+//        state = State.STOPPED;
+        stopAndExit();
     }
+
+//    /**
+//     * @return the out
+//     */
+//    public OutPort<TextToken> getOut() {
+//        return out;
+//    }
 }

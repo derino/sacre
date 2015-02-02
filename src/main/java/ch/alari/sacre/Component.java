@@ -52,6 +52,7 @@ public abstract class Component implements Callable<Object>
 
     // execution state of the component
     protected State state;
+
     public enum State {NOT_STARTED, RUNNING, STOPPED, FLUSHED};
 
     // The sink components can return an object as a result of the execution of the whole pipeline.
@@ -59,8 +60,85 @@ public abstract class Component implements Callable<Object>
     protected Object result;
 
     
+    /**
+     * Main functionality of the component is to be implemented by task().
+     * It is called as long as there is input to be processed or, in the case of source components, until stopAndExit() is explicitly called.
+     * @throws InterruptedException
+     * @throws Exception 
+     */
     public abstract void task() throws InterruptedException, Exception;
+    
+    /**
+     * Override if a component requires any action while exiting when the input stream has ended.
+     * default behavior does nothing.
+     * Those components that produce their output when all their input is consumed should override this method
+     * to write their results to their output ports.
+     */
+    public void exiting(){}
 
+    /**
+     * STOP_WHEN_ALL_STOP_TOKENS_RECEIVED (default): for most components (at first, thought to be only for Merge-like components, but in fact applies to all others.
+     * CUSTOM_POLICY: to be selected if "reachedEndOfStream(InPort<? extends Token> ip)" method is overridden.
+     * //STOP_WHEN_FIRST_STOP_TOKEN_RECEIVED: for most components
+     */
+    public enum EndOfStreamPolicy {STOP_WHEN_ALL_STOP_TOKENS_RECEIVED /*, CUSTOM_POLICY, STOP_WHEN_FIRST_STOP_TOKEN_RECEIVED*/};
+    
+    /**
+     * - The STOP_WHEN_ALL_STOP_TOKENS_RECEIVED policy implies that a component finishes on the last call to InPort.take() 
+     * at the time of which all input ports have previously received a STOP_TOKEN.
+     * //- The STOP_WHEN_FIRST_STOP_TOKEN_RECEIVED policy implies that a component finishes its execution when a InPort.take() is issued that
+     * receives a STOP_TOKEN.
+     * //- To be set in the subclass's constructor if different than STOP_WHEN_FIRST_STOP_TOKEN_RECEIVED
+     */
+    protected EndOfStreamPolicy endOfStreamPolicy;
+    
+    /**
+     * - called by source components at the end of the stream.
+     * - called eventually by an input port of the component when the component thread is to be finished.
+     * - sends STOP_TOKEN to all output ports and exits the component thread.
+     * @throws InterruptedException 
+     */
+    public void stopAndExit() throws InterruptedException
+    {
+        sendOutStopTokens();
+        throw new InterruptedException("EOS");
+    }
+
+    private void sendOutStopTokens() throws InterruptedException
+    {
+        for(OutPort op: getOutPorts())
+        {
+            op.put(new Token(Token.STOP));
+        }
+    }    
+    
+    public void stopAndExitIfAllStopped() throws InterruptedException
+    {
+        boolean allInputPortsStopped = true;
+        for(InPort ip: getInPorts())
+        {
+            allInputPortsStopped &= ip.isStopped();
+        }
+        if(allInputPortsStopped)
+        {
+            stopAndExit();
+        }
+    }
+    
+    /**
+     * called by an input port when a STOP_TOKEN is received.
+     * default behavior sends a STOP_TOKEN to all output ports and stops the component's thread
+     * when all input ports have received a STOP_TOKEN.
+     * To be overridden if a component wants to implement a custom stop policy.
+     * @param ip - the input port that has received a STOP_TOKEN.
+     * @throws InterruptedException 
+     */
+    public void reachedEndOfStream(InPort<? extends Token> ip) throws InterruptedException
+    {
+        if(endOfStreamPolicy == EndOfStreamPolicy.STOP_WHEN_ALL_STOP_TOKENS_RECEIVED)
+            stopAndExitIfAllStopped();
+    }
+    
     public Component(String name)
     {
         this.name = name;
@@ -68,8 +146,9 @@ public abstract class Component implements Callable<Object>
         initSuccess = true;
         inPorts = new ArrayList<InPort<? extends Token>>();
         outPorts = new ArrayList<OutPort<? extends Token>>();
-//        eventQueue = new LinkedBlockingQueue<Event>();
         state = State.NOT_STARTED;
+        endOfStreamPolicy = EndOfStreamPolicy.STOP_WHEN_ALL_STOP_TOKENS_RECEIVED; //EndOfStreamPolicy.STOP_WHEN_FIRST_STOP_TOKEN_RECEIVED;
+//        eventQueue = new LinkedBlockingQueue<Event>();        
     }
 
     /**
@@ -119,8 +198,7 @@ public abstract class Component implements Callable<Object>
 
     /**
      * used by Pipeline.parse(). There is an assumption in the pipeline
-     * syntax that for ex. in A ! B,C B is connected to the first and C to
-     * the second port of A.
+     * syntax that for ex. in "A ! B & C" B and C are connected to the first and second port of A, respectively.
      * @param dirType: given directional type
      * @return the next unconnected port of given directional type
      */
@@ -131,7 +209,7 @@ public abstract class Component implements Callable<Object>
             if(!p.isConnected() )
                 return p;
         }
-        return null; // shouldn't happen
+        return null;
     }
 
     public OutPort<? extends Token> nextOutPortToConnect()
@@ -141,7 +219,7 @@ public abstract class Component implements Callable<Object>
             if(!p.isConnected())
                 return p;
         }
-        return null; // shouldn't happen
+        return null;
     }
     
     
@@ -203,17 +281,29 @@ public abstract class Component implements Callable<Object>
             }
             catch(InterruptedException ie)
             {
-                SacreLib.logger.fine(type + "(instance name:" + name + ") thread interrupted.");
-                state = State.STOPPED; // not necessarily needed.
-                return null;
+                if(ie.getMessage().equals("EOS")) // task exits normally at the end of stream with stopAndExit()
+                {
+                    SacreLib.logger.fine(type + "(instance name:" + name + ") thread finished.");
+                    return result;
+                }
+                else
+                {
+                    SacreLib.logger.fine(type + "(instance name:" + name + ") thread interrupted.");
+                    state = State.STOPPED; // not necessarily needed.
+                    return null;
+                }
             }
             catch(Exception ex)
             {
                 SacreLib.logger.log(Level.WARNING, "Exception in " + type + "(instance name:" + name + ") thread", ex);
             }
         }
-        SacreLib.logger.fine(type + "(instance name:" + name + ") thread finished.");
-        return result;
+        
+        // should never execute
+        assert(false);
+        return null;
+//        SacreLib.logger.fine(type + "(instance name:" + name + ") thread finished.");
+//        return result;
     }
 
 
@@ -252,10 +342,10 @@ public abstract class Component implements Callable<Object>
 //        eventQueue.put(e);
 //    }
 
-    protected void componentFlushed()
-    {
-        state = State.FLUSHED;
-    }
+//    protected void componentFlushed()
+//    {
+//        state = State.FLUSHED;
+//    }
 
     public State getState()
     {
@@ -286,27 +376,13 @@ public abstract class Component implements Callable<Object>
         //return ports;
     }    
     
-    /**
-     * subclasses of Component should use this method to define their ports.
-     * @param p
-     */
     protected void addInPort(InPort<? extends Token> p)
     {
         inPorts.add(p);
-
-        // I'm not sure TODO: in order to remove from task() body the setting of the state to STOPPED
-        // after sending a STOP token, for each output port, we add a hook which sets
-        // state to STOPPED. not so nice when there are multiple output ports.
-        // what if a STOP token on one port doesn't imply state to be STOPPED!
     }
     
     protected void addOutPort(OutPort<? extends Token> p)
     {
         outPorts.add(p);
-
-        // I'm not sure TODO: in order to remove from task() body the setting of the state to STOPPED
-        // after sending a STOP token, for each output port, we add a hook which sets
-        // state to STOPPED. not so nice when there are multiple output ports.
-        // what if a STOP token on one port doesn't imply state to be STOPPED!
     }
 }

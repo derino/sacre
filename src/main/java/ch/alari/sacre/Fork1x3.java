@@ -54,22 +54,27 @@ public class Fork1x3 extends Fork
     public void task() throws InterruptedException, Exception
     {
         Token t = in.take();
-        if(t != null)
-        {
-            if(t.isStop())
-            {
-                out1.put(new Token(Token.STOP));
-                out2.put(new Token(Token.STOP));
-                out3.put(new Token(Token.STOP));
-                state = State.STOPPED;
-                return;
-            }
-            else
-            {
-                out1.put(t);
-                out2.put(t);
-                out3.put(t);
-            }
-        }
+        
+        out1.put(t);
+        out2.put(t);
+        out3.put(t);
+        
+//        if(t != null)
+//        {
+//            if(t.isStop())
+//            {
+//                out1.put(new Token(Token.STOP));
+//                out2.put(new Token(Token.STOP));
+//                out3.put(new Token(Token.STOP));
+//                state = State.STOPPED;
+//                return;
+//            }
+//            else
+//            {
+//                out1.put(t);
+//                out2.put(t);
+//                out3.put(t);
+//            }
+//        }
     }
 }

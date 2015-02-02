@@ -47,7 +47,7 @@ public class Merge8x1 extends Merge3x1
     protected InPort<Token> in7;
     protected InPort<Token> in8;
     
-    boolean in1Live = true, in2Live = true, in3Live = true, in4Live = true, in5Live = true, in6Live = true, in7Live = true, in8Live = true;
+    //boolean in1Live = true, in2Live = true, in3Live = true, in4Live = true, in5Live = true, in6Live = true, in7Live = true, in8Live = true;
 
     public Merge8x1(String name)
     {
@@ -66,108 +66,106 @@ public class Merge8x1 extends Merge3x1
     {
         //while(true)
         //{//TODO: how to do it with generics to avoid casting
-        if(in1Live)
+        if(!in1.isStopped()) //(in1Live)
         {
             Token b1 = in1.take(); // TODO: poll() makes more sense but cpu-hungry
             if(b1 != null)
             {
-                if(b1.isStop())
-                    in1Live = false;
-                else
+//                if(b1.isStop())
+//                    in1Live = false;
+//                else
                     out.put(b1);
             }
         }
 
-        if(in2Live)
+        if(!in2.isStopped()) //(in2Live)
         {
             Token b2 = in2.take(); // poll() makes more sense but cpu-hungry
             if(b2 != null)
             {
-                if(b2.isStop())
-                    in2Live = false;
-                else
+//                if(b2.isStop())
+//                    in2Live = false;
+//                else
                     out.put(b2);
             }
         }
 
-        if(in3Live)
+        if(!in3.isStopped()) //(in3Live)
         {
             Token b3 = in3.take(); // poll() makes more sense but cpu-hungry
             if(b3 != null)
             {
-                if(b3.isStop())
-                    in3Live = false;
-                else
+//                if(b3.isStop())
+//                    in3Live = false;
+//                else
                     out.put(b3);
             }
         }
-        
-        if(in4Live)
+        if(!in4.isStopped()) //(in4Live)
         {
-            Token b4 = in4.take(); // poll() makes more sense but cpu-hungry
+            Token b4 = in4.take(); // TODO: poll() makes more sense but cpu-hungry
             if(b4 != null)
             {
-                if(b4.isStop())
-                    in4Live = false;
-                else
+//                if(b4.isStop())
+//                    in4Live = false;
+//                else
                     out.put(b4);
             }
         }
-        
-        if(in5Live)
+
+        if(!in5.isStopped()) //(in5Live)
         {
             Token b5 = in5.take(); // poll() makes more sense but cpu-hungry
             if(b5 != null)
             {
-                if(b5.isStop())
-                    in5Live = false;
-                else
+//                if(b5.isStop())
+//                    in5Live = false;
+//                else
                     out.put(b5);
             }
         }
-        
-        if(in6Live)
+
+        if(!in6.isStopped()) //(in6Live)
         {
             Token b6 = in6.take(); // poll() makes more sense but cpu-hungry
             if(b6 != null)
             {
-                if(b6.isStop())
-                    in6Live = false;
-                else
+//                if(b6.isStop())
+//                    in6Live = false;
+//                else
                     out.put(b6);
             }
         }
-        
-        if(in7Live)
+        if(!in7.isStopped()) //(in7Live)
         {
-            Token b7 = in7.take(); // poll() makes more sense but cpu-hungry
+            Token b7 = in7.take(); // TODO: poll() makes more sense but cpu-hungry
             if(b7 != null)
             {
-                if(b7.isStop())
-                    in7Live = false;
-                else
+//                if(b7.isStop())
+//                    in7Live = false;
+//                else
                     out.put(b7);
             }
         }
-        
-        if(in8Live)
+
+        if(!in8.isStopped()) //(in8Live)
         {
             Token b8 = in8.take(); // poll() makes more sense but cpu-hungry
             if(b8 != null)
             {
-                if(b8.isStop())
-                    in8Live = false;
-                else
+//                if(b8.isStop())
+//                    in8Live = false;
+//                else
                     out.put(b8);
             }
         }
         
-        if(!in1Live && !in2Live && !in3Live && !in4Live && !in5Live && !in6Live && !in7Live && !in8Live)
-        {
-            out.put(new Token(Token.STOP));
-            state = State.STOPPED;
-            return;
-        }
+//        if(!in1Live && !in2Live && !in3Live && !in4Live && !in5Live && !in6Live && !in7Live && !in8Live)
+//        {
+//            out.put(new Token(Token.STOP));
+//            state = State.STOPPED;
+//            return;
+//        }
         //} // /end while
     }
 
