@@ -38,8 +38,8 @@ public class InPort<T extends Token> extends Port<T>
      */
     public T take() throws InterruptedException
     {
-        if(isStopped()) // this check is VERY IMPORTANT.
-            return null; //System.out.println("!!!!!!!!!!!!!!!!!!!!!!! Reading a stopped in port");
+        if(isStopped()) // this check is VERY IMPORTANT (had a problem with MergeNx1).
+            return null;
         
         T t; // T to be returned
         t = q.take();
