@@ -332,6 +332,11 @@ public class Pipeline implements Callable<Object>
                         portPrevComp.connect(portNewComp);
                         SacreLib.logger.log(Level.FINE, "compatible ports connected: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">" );
                     }
+                    else // Token -> TextToken. This is OK if Token is actually a TextToken. Fork and Merge is likely to encounter such cases. Can be disallowed with a configuration variable
+                    {
+                        portPrevComp.connect(portNewComp);
+                        SacreLib.logger.log(Level.WARNING, "Ports are incompatible but they are connected anyhow. There may be problems while executing the pipeline: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">" );
+                    }
                 }
                 
 //                else

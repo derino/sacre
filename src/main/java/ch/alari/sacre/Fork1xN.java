@@ -35,6 +35,8 @@
 package ch.alari.sacre;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -44,6 +46,7 @@ import java.util.Map;
 public class Fork1xN extends Component
 {
     private InPort<Token> in;
+    private ParameterDescriptor<Integer> n;
     
     public Fork1xN(String name, Map<String, String> parameters)
     {
@@ -51,16 +54,29 @@ public class Fork1xN extends Component
         setType("Fork1xN");
         in = new InPort<>(this);
         
-        int n = 2; // default value
-        if(parameters != null)
-        {
-            if( parameters.get("n") != null )
-            {
-                n = new Integer(parameters.get("n"));
-            }
+        n = new ParameterDescriptor<>(this, "n", 2, ParameterDescriptor.integerConverter);
+
+        // - this can be a method in Component which calls setValue for all parameters.
+        // initParameters(parameters)
+        // - change to super(name, parameters)
+        // in the beginning of Component.call(), we can check for conflicts among parameters and set initSuccess=false if so.
+        try {
+            //paramN.setValue(parameters.get("n"), (str) -> (Integer.valueOf(str)));
+            n.setValue(parameters.get("n"));
+        } catch (ParameterDescriptor.UnallowedParameterValueException ex) {
+            initSuccess = false;
         }
         
-        for(int i=0; i<n; i++)
+//        int n = 2; // default value
+//        if(parameters != null)
+//        {
+//            if( parameters.get("n") != null )
+//            {
+//                n = new Integer(parameters.get("n"));
+//            }
+//        }
+        
+        for(int i=0; i<n.getValue(); i++)
         {
             new OutPort<Token>(this); // gets added to output ports list
         }

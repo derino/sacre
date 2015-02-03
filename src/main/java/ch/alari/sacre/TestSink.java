@@ -43,7 +43,7 @@ package ch.alari.sacre;
 public class TestSink extends Component 
 {
     //@PortType ("Token")
-    private InPort<Token> in;
+    private InPort<TextToken> in;
             
     public TestSink(String name)
     {
@@ -55,14 +55,14 @@ public class TestSink extends Component
     @Override
     public void task() throws InterruptedException, Exception
     {
-        Token t = in.take();
+        TextToken t = in.take();
         System.out.println(t);
     }
      
     /**
      * @return the in
      */
-    public InPort<Token> getIn() {
+    public InPort<TextToken> getIn() {
         return in;
     }
 

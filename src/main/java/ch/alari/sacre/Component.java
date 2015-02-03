@@ -27,6 +27,7 @@ public abstract class Component implements Callable<Object>
 
     // subclasses should initialize (if needed) from given params in their constructor.
     protected Map<String, Object> params;
+    protected Map<String, ParameterDescriptor<?>> parameters;
   
     // implies component has been created with proper parameters
     // this variable is true at the end of the constructor if the initilization is correct.
@@ -148,6 +149,7 @@ public abstract class Component implements Callable<Object>
     {
         this.name = name;
         params = new HashMap<String, Object>();
+        parameters = new HashMap<String, ParameterDescriptor<?>>();
         initSuccess = true;
         inPorts = new ArrayList<InPort<? extends Token>>();
         outPorts = new ArrayList<OutPort<? extends Token>>();
@@ -389,5 +391,10 @@ public abstract class Component implements Callable<Object>
     protected void addOutPort(OutPort<? extends Token> p)
     {
         outPorts.add(p);
+    }
+    
+    protected void addParameterDescriptor(ParameterDescriptor<?> pd)
+    {
+        parameters.put(pd.getName(), pd);
     }
 }
