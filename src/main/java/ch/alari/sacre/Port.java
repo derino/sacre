@@ -30,6 +30,8 @@ public class Port<T extends Token>
 
     // port's datatype (token type)
     //private Class<T> portDataType;
+    
+    protected Component component;
 
     public Port(String name)
     {

@@ -34,7 +34,15 @@
 
 package ch.alari.sacre;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -69,26 +77,76 @@ public class MergeNx1 extends Component
     
     public void task() throws InterruptedException, Exception
     {
+//        Spliterator<InPort<? extends Token>> ips = getInPorts().spliterator();
+//        try {
+//            while(ips.tryAdvance(new Consumer<InPort<? extends Token>>() {
+//
+//                public void accept(InPort<? extends Token> ip) {
+//                    try {
+//                        Token t = ip.take();
+//                        if(!ip.isStopped())
+//                            out.put(t);
+//                    } catch (InterruptedException ex) {
+//                        if(ex.getMessage().equals("EOS"))
+//                            new UnsupportedOperationException("EOS"); //Logger.getLogger(MergeNx1.class.getName()).log(Level.SEVERE, null, ex);
+//                        //else ignored, not ideal. but could not find a way to throw an InterruptException inside Consumer.
+//                            
+//                    }
+//                }
+//            }));        
+//        } catch(UnsupportedOperationException uoe)
+//        {
+//            if(uoe.getMessage().equals("EOS"))
+//                new InterruptedException("EOS");
+//        }
+        
+        
+        
+//        List<InPort<? extends Token>> ips = Collections.synchronizedList(getInPorts());
+//        synchronized(ips)
+//        {
+//            System.out.println(getName() + " got ips");
+//            Iterator<InPort<? extends Token>> it = ips.iterator();
+//            while(it.hasNext())
+//            {
+//                InPort<? extends Token> p = it.next();
+//                Token t = p.take(); // if this take() receives a STOP_TOKEN, then null is returned by take().
+//                if(!p.isStopped())
+//                {
+//                    out.put(t);
+//                }
+//                else
+//                {
+//                    if(ips.size() == 2) //(getInPorts().size() == 2)
+//                        System.out.println("merge2x1 read stop token: " + t);
+//                }
+//            }       
+//            System.out.println(getName() + " released ips");
+//        }
+
+    
         for(InPort p: getInPorts())
         {
 //            if(getInPorts().size() == 2)
 //                System.out.println("merge2x1 reading token");
             Token t = p.take(); // if this take() receives a STOP_TOKEN, then null is returned by take().
 //            if(getInPorts().size() == 2)
-//                System.out.println("merge2x1 read token: " + t);
+            System.out.println(getName() + " read token: " + t);
             if(!p.isStopped())
             {
                 out.put(t);
 //                if(getInPorts().size() == 2)
 //                    System.out.println("merge2x1 wrote token: " + t);
             }
-            else
-            {
-                if(getInPorts().size() == 2)
-                    System.out.println("merge2x1 read stop token: " + t);
-            }
-                
-        }
+//            else
+//            {
+//                if(getInPorts().size() == 2) //(getInPorts().size() == 2)
+//                    System.out.println("merge2x1 read stop token: " + t);
+//            }
+        }       
+
+    
+    
     }
 
     public InPort getIn(int i)

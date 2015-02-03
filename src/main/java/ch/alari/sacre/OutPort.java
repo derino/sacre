@@ -20,6 +20,7 @@ public class OutPort<T extends Token> extends Port<T>
     {
         super(c.getName()+".outport"+c.uniqueOutPortID++);
         c.addOutPort(this);
+        this.component = c;
     }
 
     public void put(T token) throws InterruptedException
@@ -30,7 +31,15 @@ public class OutPort<T extends Token> extends Port<T>
 //            tokenAllowedByHooks &= h.newToken(token);
 //        }
 //        if(tokenAllowedByHooks)
-            q.put(token);
+        if(token.isStop())
+        {
+            System.out.println("putting STOP token to " + getName());
+        }
+        q.put(token);
+        if(token.isStop())
+        {
+            System.out.println("put STOP token to " + getName());
+        }
     }
     
     // InPort and OutPort have a slight difference in connect().

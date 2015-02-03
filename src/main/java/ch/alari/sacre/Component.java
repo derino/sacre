@@ -8,8 +8,10 @@ package ch.alari.sacre;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -117,14 +119,39 @@ public abstract class Component implements Callable<Object>
         }
     }    
     
+    
+    private int numStoppedInPorts;
+    
     public void stopAndExitIfAllStopped() throws InterruptedException
     {
         boolean allInputPortsStopped = true;
+        
+//        List<Boolean> portStatuses = new ArrayList<>();
+//        Spliterator<InPort<? extends Token>> ips = getInPorts().spliterator();
+//        while(ips.tryAdvance( (ip) -> portStatuses.add(ip.isStopped()) ));
+//        
+//        for(boolean b: portStatuses)
+//            allInputPortsStopped &= b;
+  
+        
+        
+//        List<InPort<? extends Token>> ips = Collections.synchronizedList(getInPorts());
+//        synchronized(ips)
+//        {
+//            System.out.println(getName() + " comp. got ips");
+//            Iterator<InPort<? extends Token>> it = ips.iterator();
+//            while(it.hasNext())
+//                allInputPortsStopped &= it.next().isStopped();
+//            System.out.println(getName() + " comp. released ips");
+//        }
+        
         for(InPort ip: getInPorts())
         {
+            System.out.println(ip.getName() + ": " + ip.isStopped());
             allInputPortsStopped &= ip.isStopped();
         }
         if(allInputPortsStopped)
+        //if(numStoppedInPorts == inPorts.size())
         {
             System.out.println(getName() + ": ALL STOPPED");
             stopAndExit();
@@ -141,6 +168,7 @@ public abstract class Component implements Callable<Object>
      */
     public void reachedEndOfStream(InPort<? extends Token> ip) throws InterruptedException
     {
+        //numStoppedInPorts++;
         if(endOfStreamPolicy == EndOfStreamPolicy.STOP_WHEN_ALL_STOP_TOKENS_RECEIVED)
             stopAndExitIfAllStopped();
     }
@@ -154,6 +182,7 @@ public abstract class Component implements Callable<Object>
         outPorts = new ArrayList<OutPort<? extends Token>>();
         state = State.NOT_STARTED;
         endOfStreamPolicy = EndOfStreamPolicy.STOP_WHEN_ALL_STOP_TOKENS_RECEIVED; //EndOfStreamPolicy.STOP_WHEN_FIRST_STOP_TOKEN_RECEIVED;
+        numStoppedInPorts = 0;
 //        eventQueue = new LinkedBlockingQueue<Event>();        
     }
 
