@@ -74,7 +74,10 @@ public abstract class Component implements Callable<Object>
      * Those components that produce their output when all their input is consumed should override this method
      * to write their results to their output ports.
      */
-    public void exiting() throws InterruptedException {}
+    public void exiting() throws InterruptedException 
+    {
+        System.out.println(getName() + " exiting");
+    }
 
     /**
      * STOP_WHEN_ALL_STOP_TOKENS_RECEIVED (default): for most components (at first, thought to be only for Merge-like components, but in fact applies to all others.
@@ -95,11 +98,13 @@ public abstract class Component implements Callable<Object>
     /**
      * - called by source components at the end of the stream.
      * - called eventually by an input port of the component when the component thread is to be finished.
-     * - sends STOP_TOKEN to all output ports and exits the component thread.
+     * - calls exiting() function possibly overridden by the component before
+     *   sending STOP_TOKENs to all output ports and exiting the component thread.
      * @throws InterruptedException 
      */
     public void stopAndExit() throws InterruptedException
     {
+        exiting();
         sendOutStopTokens();
         throw new InterruptedException("EOS");
     }
@@ -121,6 +126,7 @@ public abstract class Component implements Callable<Object>
         }
         if(allInputPortsStopped)
         {
+            System.out.println(getName() + ": ALL STOPPED");
             stopAndExit();
         }
     }

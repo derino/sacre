@@ -33,7 +33,18 @@ public class OutPort<T extends Token> extends Port<T>
             q.put(token);
     }
     
-    public void connect(InPort<T> in)
+//    public void connect(InPort<T> in)
+//    {
+//        if( isConnected() )
+//        {
+//            SacreLib.logger.log(Level.SEVERE, "attempting to reconnect already connected port: " + getName() + "(with " + in.getName() + ")");
+//        }
+//        q = new LinkedBlockingQueue<T>();
+//        in.connect(q);
+//        connect(q);
+//    }
+//    
+    public void connect(InPort<T> in) //? super T    T
     {
         if( isConnected() )
         {
@@ -42,6 +53,11 @@ public class OutPort<T extends Token> extends Port<T>
         q = new LinkedBlockingQueue<T>();
         in.connect(q);
         connect(q);
-    }
+    }    
+    
+//    public void connect(BlockingQueue<T> q)
+//    {
+//        this.q = q;
+//    }
 
 }

@@ -5,8 +5,8 @@
 
 package ch.alari.sacre;
 
-import java.util.ArrayList;
-import java.util.List;
+//import java.util.ArrayList;
+//import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -19,6 +19,7 @@ public class Port<T extends Token>
     private final String name;
     
     protected BlockingQueue<T> q = null;
+    //protected BlockingQueue q = null;
 
     // added for replacing a component adaptation capability
     // (enables flushing of the component)
@@ -36,9 +37,9 @@ public class Port<T extends Token>
 //        hooks = new ArrayList<Hook<T>>();
     }
         
-    public void connect(BlockingQueue<T> q)
+    public void connect(BlockingQueue<? super T> q) //? extends T     T
     {
-        this.q = q;
+        this.q = (BlockingQueue<T>)q;
     }
     
     /*public BlockingQueue<T> getQueue()

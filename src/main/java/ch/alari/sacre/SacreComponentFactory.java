@@ -52,6 +52,8 @@ public class SacreComponentFactory implements ComponentFactory
     {
         if(cType.equalsIgnoreCase("merge"))
             return new Merge(cName);
+        else if(cType.equalsIgnoreCase("mergenx1"))
+            return new MergeNx1(cName, params);
         else if(cType.equalsIgnoreCase("merge3x1"))
             return new Merge3x1(cName);
         else if(cType.equalsIgnoreCase("merge8x1"))
@@ -62,6 +64,8 @@ public class SacreComponentFactory implements ComponentFactory
             return new Fork(cName);
         else if(cType.equalsIgnoreCase("fork1x3"))
             return new Fork1x3(cName);
+        else if(cType.equalsIgnoreCase("fork1xn"))
+            return new Fork1xN(cName, params);
         else if(cType.equalsIgnoreCase("gnd"))
             return new Ground(cName);
         else if(cType.equalsIgnoreCase("apisink"))

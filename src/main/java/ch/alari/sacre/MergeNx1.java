@@ -34,36 +34,70 @@
 
 package ch.alari.sacre;
 
-//import ch.alari.sacre.annotation.PortType;
+import java.util.Map;
+
 
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
  */
-public class TestSink extends Component 
+public class MergeNx1 extends Component
 {
-    //@PortType ("Token")
-    private InPort<Token> in;
-            
-    public TestSink(String name)
+    protected OutPort<Token> out;
+    
+    public MergeNx1(String name, Map<String, String> parameters)
     {
         super(name);
-        setType("TestBtk");
-        in = new InPort<>(this);
+        setType("MergeNx1");
+        
+        out = new OutPort<>(this);
+        
+        int n = 2; // default value
+        if(parameters != null)
+        {
+            if( parameters.get("n") != null )
+            {
+                n = new Integer(parameters.get("n"));
+            }
+        }
+        
+        for(int i=0; i<n; i++)
+        {
+            new InPort<Token>(this); // gets added to output ports list
+        }
     }
     
-    @Override
     public void task() throws InterruptedException, Exception
     {
-        Token t = in.take();
-        System.out.println(t);
-    }
-     
-    /**
-     * @return the in
-     */
-    public InPort<Token> getIn() {
-        return in;
+        for(InPort p: getInPorts())
+        {
+//            if(getInPorts().size() == 2)
+//                System.out.println("merge2x1 reading token");
+            Token t = p.take(); // if this take() receives a STOP_TOKEN, then null is returned by take().
+//            if(getInPorts().size() == 2)
+//                System.out.println("merge2x1 read token: " + t);
+            if(!p.isStopped())
+            {
+                out.put(t);
+//                if(getInPorts().size() == 2)
+//                    System.out.println("merge2x1 wrote token: " + t);
+            }
+            else
+            {
+                if(getInPorts().size() == 2)
+                    System.out.println("merge2x1 read stop token: " + t);
+            }
+                
+        }
     }
 
+    public InPort getIn(int i)
+    {
+        return getInPorts().get(i);
+    }
+    
+    public OutPort<Token> getOut()
+    {
+        return out;
+    }
 }

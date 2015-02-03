@@ -34,16 +34,7 @@
 
 package ch.alari.sacre;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -81,5 +72,18 @@ public class TestCvt extends Component
                 
         out.put(t);    
     }
-    
+
+    /**
+     * @return the in
+     */
+    public InPort<Token> getIn() {
+        return in;
+    }
+
+    /**
+     * @return the out
+     */
+    public OutPort<Token> getOut() {
+        return out;
+    }    
 }

@@ -8,6 +8,7 @@ package ch.alari.sacre;
 import ch.alari.sacre.annotation.PortType;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -98,25 +99,25 @@ public class Pipeline implements Callable<Object>
         for(String stmt: stmts)
         {
             // prevComps keeps track of the last sequential component(s) connected.
-            List<String> prevComps = new ArrayList<String>();
+            List<String> prevComps = new ArrayList<>();
 
-            SacreLib.logger.fine("Statement:" + stmt);
+            SacreLib.logger.log(Level.FINE, "Statement:{0}", stmt);
             
             String[] seqComps = stmt.split("!");
             for(int i = 0; i< seqComps.length; i++)
             {
                 seqComps[i] = seqComps[i].trim();
-                SacreLib.logger.fine("Sequential component:" + seqComps[i]);
+                SacreLib.logger.log(Level.FINE, "Sequential component:{0}", seqComps[i]);
                 
                 String[] paralComps = seqComps[i].split("&");
                 
                 if(paralComps.length > 1)
                 {
-                    List<String> pcComps = new ArrayList<String>(); // to keep the parallel created comps of this iteration
+                    List<String> pcComps = new ArrayList<>(); // to keep the parallel created comps of this iteration
                     for(String paralComp: paralComps)
                     {
                         paralComp = paralComp.trim();
-                        SacreLib.logger.fine("Parallel component:" + paralComp);
+                        SacreLib.logger.log(Level.FINE, "Parallel component:{0}", paralComp);
                         // create component
                         String pcComp = createComponent(paralComp);
                         pcComps.add(pcComp);
@@ -139,7 +140,7 @@ public class Pipeline implements Callable<Object>
                     // if i==0 there is no previous comp. to be connected to.
                     if(i!=0)
                     {
-                        List<String> cComps = new ArrayList<String>();
+                        List<String> cComps = new ArrayList<>();
                         cComps.add(cComp);
                         connect(prevComps, cComps);
                     }
@@ -167,13 +168,13 @@ public class Pipeline implements Callable<Object>
             for(Port p: c.getInPorts())
             {
                 if(!p.isConnected())
-                    SacreLib.logger.severe(p.getName() + " is not connected!");
+                    SacreLib.logger.log(Level.SEVERE, "{0} is not connected!", p.getName());
                 allConnected &= p.isConnected();
             }
             for(Port p: c.getOutPorts())
             {
                 if(!p.isConnected())
-                    SacreLib.logger.severe(p.getName() + " is not connected!");
+                    SacreLib.logger.log(Level.SEVERE, "{0} is not connected!", p.getName());
                 allConnected &= p.isConnected();
             }
             if(!allConnected)
@@ -288,20 +289,25 @@ public class Pipeline implements Callable<Object>
                 if(portPrevComp == null)
                     continue;
                 String portTypePrev = getPortTypeOfComponentsPort( pComps.get(prevComp), portPrevComp, "OutPort");
-
+                //String portTypePrev = getPortTokenType(portPrevComp); // could not come up with such a function. That information does not exist at run-time.
+                //System.out.println("portTypePrev: " + portTypePrev);
+                
                 InPort portNewComp = pComps.get(newComp).nextInPortToConnect();
                 if(portNewComp == null)
-                {
-                    //SacreLib.logger.log(Level.SEVERE, "attempted to connect non-existing ports: " + pComps.get(prevComp).getName() + " <-> " + pComps.get(newComp).getName() );
-                    continue;
-                    //System.exit(-1);
-                }
+                    continue;     //SacreLib.logger.log(Level.SEVERE, "attempted to connect non-existing ports: " + pComps.get(prevComp).getName() + " <-> " + pComps.get(newComp).getName() );
                 String portTypeNew = getPortTypeOfComponentsPort( pComps.get(newComp), portNewComp, "InPort");
+                //String portTypeNew = getPortTokenType(portNewComp); // could not come up with such a function. That information does not exist at run-time.
+                //System.out.println("portTypeNew: " + portTypeNew);
                 
                 boolean arePortsCompatible;
                 if(portTypePrev == null || portTypeNew == null)
                 {
-                    arePortsCompatible = false;
+                    // the port is not statically declared as a field. It is dynamically created and add to port list in the component's constructor. (e.g., Fork1xN)
+                    // in such cases, there is no way of inferring the token type of the port.
+                    // continue assuming ports are compatible.
+                    arePortsCompatible = true;
+                    portPrevComp.connect(portNewComp);
+                    SacreLib.logger.log(Level.WARNING, "Port compatibility could not be checked! Connected assuming they are compatible:" + portPrevComp.getName() + " <-> " + portNewComp.getName() );
                 }
                 else
                 {
@@ -320,23 +326,23 @@ public class Pipeline implements Callable<Object>
                         ex.printStackTrace();
                         System.exit(-1);
                     }
+                    
+                    if(arePortsCompatible) //if( portTypePrev.equals(portTypeNew) )
+                    {
+                        portPrevComp.connect(portNewComp);
+                        SacreLib.logger.log(Level.FINE, "compatible ports connected: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">" );
+                    }
                 }
                 
-                if(arePortsCompatible) //if( portTypePrev.equals(portTypeNew) )
-                {
-                    portPrevComp.connect(portNewComp);
-                    SacreLib.logger.log(Level.FINE, "compatible ports connected: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">" );
-                }
-                else
-                {
+//                else
+//                {
                     //SacreLib.logger.log(Level.SEVERE, "attempted to connect incompatible ports: " + portPrevComp.getName() + "<" + portTypePrev + ">" + " <-> " + portNewComp.getName() + "<" + portTypeNew + ">" );
                     //System.exit(-1);
-                }
-                
+//                }
             }
         }
     }
-
+    
     private String getPortTypeOfComponentsPort(Component comp, Port port, String inport_outport) throws SecurityException, IllegalArgumentException {
         Class<?> c = comp.getClass();
         //System.out.println("class: " + c.getName());
@@ -383,48 +389,7 @@ public class Pipeline implements Callable<Object>
         }
         return null;
     }
-    
-//    private String getPortTypeOfComponentsInPort(Component comp, InPort port) throws SecurityException, IllegalArgumentException {
-//        Class<?> c = comp.getClass();
-//        //System.out.println("class: " + c.getName());
-//        Field[] fields = c.getDeclaredFields();
-//        Field[] superfields = c.getSuperclass().getDeclaredFields();
-//        ArrayList<Field> allFields = new ArrayList<>();
-//        for(Field f: fields)
-//            allFields.add(f);
-//        for(Field f: superfields)
-//            allFields.add(f);
-//        
-//        for (Field f: allFields) //(Field f : fields)
-//        {
-//            if (f.getType().getSimpleName().equals("InPort")) {
-//                //System.out.println(f.getName() + ": " + f.getType());
-//                f.setAccessible(true);
-//                try {
-//                    if (f.get(comp).equals(port)) {
-//                        //System.out.println("generic type: " + f.getGenericType().getTypeName());
-//                        String portType = f.getGenericType().getTypeName(); // ch.alari.sacre.InPort<ch.alari.sacre.TextToken>
-//                        // extract <...>
-//                        int beg = portType.lastIndexOf('<');
-//                        String tokenType = "java.lang.Object";
-//                        if(beg != -1) // ch.alari.sacre.InPort, may be defined as such. then tokenType="java.lang.Object"
-//                            tokenType = portType.substring( beg+1, portType.lastIndexOf('>') );
-//                        return tokenType;
-////                        PortType anno = f.getAnnotation(PortType.class);
-////                        if(anno != null)
-////                        {
-////                            System.out.println("anno: " + anno.value());
-////                            return anno.value();
-////                        }
-////                        else
-////                            return null;
-//                    }
-//                }catch(IllegalAccessException iae) { iae.printStackTrace();}
-//            }
-//        }
-//        return null;
-//    }
-    
+        
     public Object call()
     {
         state = State.RUNNING;
@@ -486,12 +451,14 @@ public class Pipeline implements Callable<Object>
                     }
                 }
 
-                //allDone = true;
-                //for(String s: fMap.keySet())
-                //{
-                //    SacreLib.logger.fine("Thread-" + s);
-                //    allDone &= fMap.get(s).isDone();
-                //}
+//                boolean allDone = true;
+//                for(String s: fMap.keySet())
+//                {
+//                    SacreLib.logger.fine("Thread-" + s);
+//                    allDone &= fMap.get(s).isDone();
+//                }
+//                if(!allDone)
+//                    new InterruptedException("Not all component threads finished successfully!");
             //}
 
                 //Thread.currentThread().join();

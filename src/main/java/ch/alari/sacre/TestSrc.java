@@ -73,8 +73,8 @@ public class TestSrc extends Component
 //        basliklar.add("tuncelide deneme deneme");
 //        basliklar.add("deneme deneme detuncelide");
 //        basliklar.add("deneme detuncelide deneme");
-        basliklar.add("detuncelide deneme deneme");
-        basliklar.add("deneme de deneme `tunceli`!");
+        basliklar.add("token1");
+        basliklar.add("token2");
     }
     
     @Override
@@ -88,10 +88,10 @@ public class TestSrc extends Component
         stopAndExit();
     }
 
-//    /**
-//     * @return the out
-//     */
-//    public OutPort<TextToken> getOut() {
-//        return out;
-//    }
+    /**
+     * @return the out
+     */
+    public OutPort<TextToken> getOut() {
+        return out;
+    }
 }

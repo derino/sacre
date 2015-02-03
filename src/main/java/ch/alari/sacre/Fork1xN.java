@@ -34,36 +34,54 @@
 
 package ch.alari.sacre;
 
-//import ch.alari.sacre.annotation.PortType;
+import java.util.Map;
+
 
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
  */
-public class TestSink extends Component 
+public class Fork1xN extends Component
 {
-    //@PortType ("Token")
     private InPort<Token> in;
-            
-    public TestSink(String name)
+    
+    public Fork1xN(String name, Map<String, String> parameters)
     {
         super(name);
-        setType("TestBtk");
+        setType("Fork1xN");
         in = new InPort<>(this);
+        
+        int n = 2; // default value
+        if(parameters != null)
+        {
+            if( parameters.get("n") != null )
+            {
+                n = new Integer(parameters.get("n"));
+            }
+        }
+        
+        for(int i=0; i<n; i++)
+        {
+            new OutPort<Token>(this); // gets added to output ports list
+        }
     }
     
-    @Override
     public void task() throws InterruptedException, Exception
     {
         Token t = in.take();
-        System.out.println(t);
+        
+        for(OutPort p: getOutPorts())
+            p.put(t);
+
     }
-     
-    /**
-     * @return the in
-     */
-    public InPort<Token> getIn() {
+    
+    public OutPort getOut(int i)
+    {
+        return getOutPorts().get(i);
+    }
+    
+    public InPort<Token> getIn()
+    {
         return in;
     }
-
 }
