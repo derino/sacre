@@ -33,31 +33,22 @@ public class OutPort<T extends Token> extends Port<T>
             q.put(token);
     }
     
-//    public void connect(InPort<T> in)
-//    {
-//        if( isConnected() )
-//        {
-//            SacreLib.logger.log(Level.SEVERE, "attempting to reconnect already connected port: " + getName() + "(with " + in.getName() + ")");
-//        }
-//        q = new LinkedBlockingQueue<T>();
-//        in.connect(q);
-//        connect(q);
-//    }
-//    
-    public void connect(InPort<T> in) //? super T    T
+    // InPort and OutPort have a slight difference in connect().
+    // This is to enforce type safety. InPort of a supertype can be fed by an OutPort of a subtype.
+    public void connect(InPort<? super T> in) //T
     {
         if( isConnected() )
         {
-            SacreLib.logger.log(Level.SEVERE, "attempting to reconnect already connected port: " + getName() + "(with " + in.getName() + ")");
+            SacreLib.logger.log(Level.SEVERE, "attempting to reconnect already connected port: {0}(with {1})", new Object[]{getName(), in.getName()});
         }
         q = new LinkedBlockingQueue<T>();
         in.connect(q);
         connect(q);
     }    
     
-//    public void connect(BlockingQueue<T> q)
-//    {
-//        this.q = q;
-//    }
+    public void connect(BlockingQueue<? super T> q) //T
+    {
+        this.q = (BlockingQueue<T>)q;
+    }
 
 }

@@ -66,8 +66,9 @@ public class InPort<T extends Token> extends Port<T>
         return stopped;
     }
     
-    
-    public void connect(OutPort<? extends T> out) //T    ? extends T
+    // InPort and OutPort have a slight difference in connect().
+    // This is to enforce type safety. InPort of a supertype can be fed by an OutPort of a subtype.
+    public void connect(OutPort<? extends T> out) //T
     {
         if( isConnected() )
         {
@@ -78,8 +79,9 @@ public class InPort<T extends Token> extends Port<T>
         connect(q);
     }    
     
-//    public void connect(BlockingQueue<? extends T> q)
-//    {
-//        this.q = q;
-//    }    
+    public void connect(BlockingQueue<? extends T> q) //T
+    {
+        this.q = (BlockingQueue<T>)q;
+    }
+
 }

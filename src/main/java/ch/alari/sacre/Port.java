@@ -37,10 +37,12 @@ public class Port<T extends Token>
 //        hooks = new ArrayList<Hook<T>>();
     }
         
-    public void connect(BlockingQueue<? super T> q) //? extends T     T
-    {
-        this.q = (BlockingQueue<T>)q;
-    }
+    // InPort and OutPort have a slight difference in connect().
+    // This is to enforce type safety. InPort of a supertype can be fed by an OutPort of a subtype.
+//    public void connect(BlockingQueue<? super T> q) //? extends T     T
+//    {
+//        this.q = (BlockingQueue<T>)q;
+//    }
     
     /*public BlockingQueue<T> getQueue()
     {
