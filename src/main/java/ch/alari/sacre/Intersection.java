@@ -36,6 +36,7 @@ package ch.alari.sacre;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -50,9 +51,9 @@ public class Intersection extends Component
     List<Token> historyIn1 = new ArrayList<Token>();
     List<Token> historyIn2 = new ArrayList<Token>();
     
-    public Intersection(String name)
+    public Intersection(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("Intersection");
         
         in1 = new InPort<>(this);

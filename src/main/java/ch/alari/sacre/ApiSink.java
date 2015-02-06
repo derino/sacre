@@ -46,9 +46,9 @@ import java.util.Map;
 public class ApiSink extends Component
 {
     private InPort<Token> in;
-    
+    private ParameterDescriptor<InteractionType> tip;
     private enum InteractionType {SYNCHRONOUS, ASYNCHRONOUS};
-    private InteractionType tip;
+//    private InteractionType tip;
     private int uniqueKey;
 
     private String pipelineStr;
@@ -64,12 +64,17 @@ public class ApiSink extends Component
         this.pipelineStr = pipelineStr;
     }
     
-    public ApiSink(String name, Map<String, String> parameters)
+    public ApiSink(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("APISink");
         
         in = new InPort<>(this);
+        
+        // define tip
+        String[] tipDomain = {"senkron", "asenkron"};
+        InteractionType[] tipRange  = InteractionType.values();        
+        tip = new ParameterDescriptor<>(this, "tip", false, tipRange[0], new DictionaryConverter<>(tipDomain, tipRange), tipDomain);
         
         // result is defined in Component. 
         // After the component thread ends, result is returned to the Pipeline, 
@@ -77,33 +82,33 @@ public class ApiSink extends Component
         result = (Object) new ArrayList<Token>();
         
         
-        if(parameters != null)
-        {
-            if( parameters.get("tip") != null )
-            {
-                if( parameters.get("tip").equals("asenkron") )
-                    tip = InteractionType.ASYNCHRONOUS;
-                else if( parameters.get("tip").equals("senkron") )
-                    tip = InteractionType.SYNCHRONOUS;
-                else
-                {
-                    tip = InteractionType.SYNCHRONOUS;
-                }
-            }
-            else
-            {
-                tip = InteractionType.SYNCHRONOUS;
-            }
-        }
-        else // default value
-            tip = InteractionType.SYNCHRONOUS;
+//        if(params != null)
+//        {
+//            if( params.get("tip") != null )
+//            {
+//                if( params.get("tip").equals("asenkron") )
+//                    tip = InteractionType.ASYNCHRONOUS;
+//                else if( params.get("tip").equals("senkron") )
+//                    tip = InteractionType.SYNCHRONOUS;
+//                else
+//                {
+//                    tip = InteractionType.SYNCHRONOUS;
+//                }
+//            }
+//            else
+//            {
+//                tip = InteractionType.SYNCHRONOUS;
+//            }
+//        }
+//        else // default value
+//            tip = InteractionType.SYNCHRONOUS;
     }
     
     public void task() throws InterruptedException, Exception
     {
         // notify the listeners about pipelineStr before execution just for once.
         // cannot be moved to the constructor because listeners are added only after the ApiSink component is created.
-        if(!pipelineNotificationDone && tip == InteractionType.ASYNCHRONOUS)
+        if(!pipelineNotificationDone && tip.getValue() == InteractionType.ASYNCHRONOUS)
         {
             for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
             {
@@ -116,7 +121,7 @@ public class ApiSink extends Component
         
         Token t = in.take();
         
-        if(tip == InteractionType.SYNCHRONOUS)
+        if(tip.getValue() == InteractionType.SYNCHRONOUS)
             ((List<Token>)result).add(t);
         else // (tip == InteractionType.ASYNCHRONOUS)
         {
@@ -160,7 +165,7 @@ public class ApiSink extends Component
     @Override
     public void exiting()
     {
-        if(tip == InteractionType.ASYNCHRONOUS)
+        if(tip.getValue() == InteractionType.ASYNCHRONOUS)
         {
             for(ApiSinkListener asl: SacreLib.getApiSinkListeners(uniqueKey))
             {

@@ -51,23 +51,23 @@ public class SacreComponentFactory implements ComponentFactory
     public Component create(String cType, String cName, Map<String, String> params)
     {
         if(cType.equalsIgnoreCase("merge"))
-            return new Merge(cName);
+            return new Merge(cName, params);
         else if(cType.equalsIgnoreCase("mergenx1"))
             return new MergeNx1(cName, params);
         else if(cType.equalsIgnoreCase("merge3x1"))
-            return new Merge3x1(cName);
+            return new Merge3x1(cName, params);
         else if(cType.equalsIgnoreCase("merge8x1"))
-            return new Merge8x1(cName);
+            return new Merge8x1(cName, params);
         else if(cType.equalsIgnoreCase("intersection"))
-            return new Intersection(cName);
+            return new Intersection(cName, params);
         else if(cType.equalsIgnoreCase("fork"))
-            return new Fork(cName);
+            return new Fork(cName, params);
         else if(cType.equalsIgnoreCase("fork1x3"))
-            return new Fork1x3(cName);
+            return new Fork1x3(cName, params);
         else if(cType.equalsIgnoreCase("fork1xn"))
             return new Fork1xN(cName, params);
         else if(cType.equalsIgnoreCase("gnd"))
-            return new Ground(cName);
+            return new Ground(cName, params);
         else if(cType.equalsIgnoreCase("apisink"))
             return new ApiSink(cName, params);
         else if(cType.equalsIgnoreCase("LimitFlt"))
@@ -77,7 +77,7 @@ public class SacreComponentFactory implements ComponentFactory
         else if(cType.equalsIgnoreCase("TestCvt"))
             return new TestCvt(cName, params);
         else if(cType.equalsIgnoreCase("TestBtk"))
-            return new TestSink(cName);
+            return new TestSink(cName, params);
         else
         {
             return pluginManager.create(cType, cName, params);

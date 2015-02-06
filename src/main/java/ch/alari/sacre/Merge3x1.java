@@ -34,6 +34,8 @@
 
 package ch.alari.sacre;
 
+import java.util.Map;
+
 
 /**
  *
@@ -45,9 +47,9 @@ public class Merge3x1 extends Merge
     
     //boolean in1Live = true, in2Live = true, in3Live = true;
 
-    public Merge3x1(String name)
+    public Merge3x1(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("Merge3x1");
         
         in3 = new InPort<>(this);

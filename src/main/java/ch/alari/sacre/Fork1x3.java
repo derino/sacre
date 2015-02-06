@@ -34,6 +34,8 @@
 
 package ch.alari.sacre;
 
+import java.util.Map;
+
 
 /**
  *
@@ -43,9 +45,9 @@ public class Fork1x3 extends Fork
 {
     protected OutPort<Token> out3;
     
-    public Fork1x3(String name)
+    public Fork1x3(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("Fork1x3");
         
         out3 = new OutPort<>(this);

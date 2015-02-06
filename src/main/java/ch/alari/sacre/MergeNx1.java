@@ -44,24 +44,31 @@ import java.util.Map;
 public class MergeNx1 extends Component
 {
     protected OutPort<Token> out;
+    private ParameterDescriptor<Integer> n;
     
-    public MergeNx1(String name, Map<String, String> parameters)
+    public MergeNx1(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("MergeNx1");
         
         out = new OutPort<>(this);
         
-        int n = 2; // default value
-        if(parameters != null)
-        {
-            if( parameters.get("n") != null )
-            {
-                n = new Integer(parameters.get("n"));
-            }
-        }
+        // define n
+        n = new ParameterDescriptor<>(this, "n", false, 2, ParameterDescriptor.integerConverter);
         
-        for(int i=0; i<n; i++)
+        // set parameters
+        initParameters();
+        
+//        int n = 2; // default value
+//        if(params != null)
+//        {
+//            if( params.get("n") != null )
+//            {
+//                n = new Integer(params.get("n"));
+//            }
+//        }
+        
+        for(int i=0; i<n.getValue(); i++)
         {
             new InPort<Token>(this); // gets added to output ports list
         }

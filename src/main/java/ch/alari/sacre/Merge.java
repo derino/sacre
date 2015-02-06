@@ -34,6 +34,8 @@
 
 package ch.alari.sacre;
 
+import java.util.Map;
+
 
 /**
  *
@@ -47,9 +49,9 @@ public class Merge extends Component
     
     //boolean in1Live = true, in2Live = true;
 
-    public Merge(String name)
+    public Merge(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("Merge");
         
         in1 = new InPort<>(this);

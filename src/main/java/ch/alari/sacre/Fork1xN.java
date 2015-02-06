@@ -48,24 +48,27 @@ public class Fork1xN extends Component
     private InPort<Token> in;
     private ParameterDescriptor<Integer> n;
     
-    public Fork1xN(String name, Map<String, String> parameters)
+    public Fork1xN(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("Fork1xN");
         in = new InPort<>(this);
         
-        n = new ParameterDescriptor<>(this, "n", 2, ParameterDescriptor.integerConverter);
+        // define n
+        n = new ParameterDescriptor<>(this, "n", false, 2, ParameterDescriptor.integerConverter);
 
         // - this can be a method in Component which calls setValue for all parameters.
         // initParameters(parameters)
         // - change to super(name, parameters)
         // in the beginning of Component.call(), we can check for conflicts among parameters and set initSuccess=false if so.
-        try {
-            //paramN.setValue(parameters.get("n"), (str) -> (Integer.valueOf(str)));
-            n.setValue(parameters.get("n"));
-        } catch (ParameterDescriptor.UnallowedParameterValueException ex) {
-            initSuccess = false;
-        }
+        // set n
+//        try {
+//            //paramN.setValue(parameters.get("n"), (str) -> (Integer.valueOf(str)));
+//            n.setValue(params.get(n.getName()));
+//        } catch (ParameterDescriptor.UnallowedParameterValueException | ParameterDescriptor.RequiredParameterNotSuppliedException | ParameterDescriptor.PreconditionsNotMetException ex) {
+//            initSuccess = false;
+//        }
+        initParameters();
         
 //        int n = 2; // default value
 //        if(parameters != null)

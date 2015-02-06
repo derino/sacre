@@ -44,39 +44,44 @@ public class LimitFilter extends Component
 {
     protected InPort<Token> in;
     protected OutPort<Token> out;
+    private ParameterDescriptor<Long> limit;
     
-    private long limit;
+//    private long limit;
     private long count;
     
-    public LimitFilter(String name, Map<String, String> parameters)
+    public LimitFilter(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("LimitFlt");
         
         in = new InPort<>(this);
         out = new OutPort<>(this);
+    
+        // define limit
+        limit = new ParameterDescriptor<>(this, "limit", false, 1L, ParameterDescriptor.longConverter);
         
         count = 0;
         
-        if(parameters != null)
-        {
-            if( parameters.get("limit") != null )
-                limit = new Long((String)parameters.get("limit")).longValue();
-            else
-            {
-                limit = 1;
-            }
-        }
-        else // default value
-            limit = 1;        
+//        if(parameters != null)
+//        {
+//            if( parameters.get("limit") != null )
+//                limit = new Long((String)params.get("limit"));
+//            else
+//            {
+//                limit = 1;
+//            }
+//        }
+//        else // default value
+//            limit = 1;        
     }
     
+    @Override
     public void task() throws InterruptedException//, Exception
     {
         Token t = in.take();
 
         // filtreleme
-        if ( ++count <= limit )
+        if ( ++count <= limit.getValue() )
             out.put(t);
     }
 }

@@ -47,19 +47,19 @@ public class TestCvt extends Component
     
     private String alan; 
     
-    public TestCvt(String name, Map<String, String> parameters)
+    public TestCvt(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         in = new InPort<>(this);
         out = new OutPort<>(this);
         setType("TestCvt");
         
-        if(parameters != null)
+        if(params != null)
         {
             // alani al
-            if( parameters.get("alan") != null )
+            if( params.get("alan") != null )
             {
-                alan = parameters.get("alan");
+                alan = params.get("alan");
             }
         }
         else

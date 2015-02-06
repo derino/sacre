@@ -6,6 +6,7 @@
 package ch.alari.sacre;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -26,13 +27,18 @@ public abstract class Component implements Callable<Object>
     protected String type;
 
     // subclasses should initialize (if needed) from given params in their constructor.
-    protected Map<String, Object> params;
+    //protected Map<String, Object> params;
+    protected Map<String, String> params;
     protected Map<String, ParameterDescriptor<?>> parameters;
   
     // implies component has been created with proper parameters
     // this variable is true at the end of the constructor if the initilization is correct.
     // otherwise the task is stopped right in the beginning of task()
     protected boolean initSuccess;
+    
+    // a list of preconditions to be satisfied by the given parameters. (additional on top of parameter preconditions)
+    // to be populated via addPreconditions() method in the constructor of subclasses if such preconditions exist.
+    protected List<ParameterPrecondition> preconditions;
     
     // subclasses should set the port list of the component via addInPort()
     private List<InPort<? extends Token>> inPorts;
@@ -145,11 +151,11 @@ public abstract class Component implements Callable<Object>
             stopAndExitIfAllStopped();
     }
     
-    public Component(String name)
+    public Component(String name, Map<String, String> params)
     {
         this.name = name;
-        params = new HashMap<String, Object>();
-        parameters = new HashMap<String, ParameterDescriptor<?>>();
+        //params = new HashMap<String, Object>();
+        this.params = params;
         initSuccess = true;
         inPorts = new ArrayList<InPort<? extends Token>>();
         outPorts = new ArrayList<OutPort<? extends Token>>();
@@ -395,6 +401,57 @@ public abstract class Component implements Callable<Object>
     
     protected void addParameterDescriptor(ParameterDescriptor<?> pd)
     {
+        if(parameters == null)
+            parameters = new HashMap<>();
         parameters.put(pd.getName(), pd);
     }
+    
+    protected void initParameters()
+    {
+        // set each parameter in parameters according to params. 
+        // if exists, parameters individual preconditions are checked.
+        parameters.values().stream().forEach((pd) -> {
+            try {
+                pd.setValue(params.get(pd.getName()));
+            } catch (ParameterDescriptor.UnallowedParameterValueException | ParameterDescriptor.RequiredParameterNotSuppliedException | ParameterDescriptor.PreconditionsNotMetException ex) {
+                initSuccess = false;
+            }
+        });
+        
+        // check component's preconditions. (e.g., whether two specific parameters are given or not)
+        if( !arePreconditionsMet() )
+        {
+            initSuccess = false;
+        }
+    }
+    
+    
+    private boolean arePreconditionsMet() 
+    {
+        if(preconditions== null || preconditions.isEmpty())
+            return true;
+
+        //return preconditions.stream().allMatch(p -> p.test());
+        
+        // for better error msg
+        boolean allmet = true;
+        for(ParameterPrecondition pp: preconditions) 
+        {
+            if(!pp.test())
+            {
+                allmet = false;
+                SacreLib.logger.log(Level.WARNING, "For {0}, it is required that {1}", new Object[]{getType(), pp});
+            }
+        }
+        return allmet;
+    }
+    
+    public void addPreconditions(ParameterPrecondition... preconditions)
+    {
+        if(this.preconditions == null)
+            this.preconditions = new ArrayList<>();
+        
+        this.preconditions.addAll(Arrays.asList(preconditions));
+    }
+
 }

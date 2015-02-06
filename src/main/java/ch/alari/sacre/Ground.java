@@ -34,6 +34,8 @@
 
 package ch.alari.sacre;
 
+import java.util.Map;
+
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
@@ -42,9 +44,9 @@ public class Ground extends Component
 {
     private InPort<Token> in;
     
-    public Ground(String name)
+    public Ground(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("GND");
         
         in = new InPort<>(this);

@@ -30,6 +30,7 @@ public class Port<T extends Token>
 
     // port's datatype (token type)
     //private Class<T> portDataType;
+    // TODO_CHECK: sunu da bir dene: q'yu Field olarak alip ((ParameterizedType)alanField.getGenericType()).getActualTypeArguments()[0] Class donduruyor.
 
     public Port(String name)
     {

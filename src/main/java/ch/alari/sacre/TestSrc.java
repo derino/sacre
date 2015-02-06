@@ -53,9 +53,9 @@ public class TestSrc extends Component
     
     List<String> basliklar; // .tema biciminden dolayi boyle arrayli
     
-    public TestSrc(String name, Map<String, String> parameters)
+    public TestSrc(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("TestKnk");
         this.out = new OutPort<>(this);
         

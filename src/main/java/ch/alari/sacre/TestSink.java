@@ -36,6 +36,9 @@ package ch.alari.sacre;
 
 //import ch.alari.sacre.annotation.PortType;
 
+import java.util.Map;
+
+
 /**
  *
  * @author Onur Derin <oderin at users.sourceforge.net>
@@ -45,9 +48,9 @@ public class TestSink extends Component
     //@PortType ("Token")
     private InPort<TextToken> in;
             
-    public TestSink(String name)
+    public TestSink(String name, Map<String, String> params)
     {
-        super(name);
+        super(name, params);
         setType("TestBtk");
         in = new InPort<>(this);
     }
