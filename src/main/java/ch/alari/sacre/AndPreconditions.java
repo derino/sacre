@@ -29,10 +29,10 @@ public class AndPreconditions implements ParameterPrecondition {
 
     @Override
     public String toString() {
-        StringBuilder res = new StringBuilder("all of the following: ");
+        StringBuilder res = new StringBuilder("all of the following are true: ");
         for(ParameterPrecondition pp: pps)
-            res.append(pp).append(", ");
-        res.delete(res.lastIndexOf(","), res.length()); // remove last comma and space
+            res.append(pp).append("; ");
+        res.delete(res.lastIndexOf(";"), res.length()); // remove last comma and space
         return res.toString();
     }
 }

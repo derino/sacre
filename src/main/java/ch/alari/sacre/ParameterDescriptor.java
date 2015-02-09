@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -49,8 +50,11 @@ public class ParameterDescriptor<T>
 
     private Component component;
     
+    private String description;
+    
     public ParameterDescriptor(Component c, String name, boolean required, List<ParameterPrecondition> preconditions, T defaultValue, StringToValueConverter<T> converter, String... allowedValues)
     {
+        this.description = "no description given.";
         this.name = name;
         this.required = required;
         this.preconditions = preconditions;
@@ -70,6 +74,7 @@ public class ParameterDescriptor<T>
     // constructor without preconditions
     public ParameterDescriptor(Component c, String name, boolean required, T defaultValue, StringToValueConverter<T> converter, String... allowedValues)
     {
+        this.description = "no description given.";
         this.name = name;
         this.required = required;
         this.defaultValue = defaultValue;
@@ -85,6 +90,15 @@ public class ParameterDescriptor<T>
         this.component = c; // used for printing better error messages by refering to the component type with wrong parameter.
     }
 
+    private String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) 
+    {
+        this.description = description;
+    }
+    
     public static class UnallowedParameterValueException extends Exception {
 
         public UnallowedParameterValueException() {
@@ -263,5 +277,51 @@ public class ParameterDescriptor<T>
             this.preconditions = new ArrayList<>();
         
         this.preconditions.addAll(Arrays.asList(preconditions));
+    }
+    
+    public String toHelpString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName()).append(": ");
+        
+        if(required)
+            sb.append("(required) ");
+        else
+        {
+            String def;
+            if(defaultValue == null)
+                def = "none";
+            else if(defaultValue.getClass().isArray())
+                def = Arrays.toString((Object[])defaultValue);
+            else if(defaultValue instanceof Calendar)
+            {
+                Calendar cal = ((Calendar)defaultValue);
+                String gun = cal.get(Calendar.DAY_OF_MONTH) + ".";
+                gun += (cal.get(Calendar.MONTH)+1) + ".";
+                gun += cal.get(Calendar.YEAR);
+                def = gun;
+            }   
+            else
+                def = defaultValue.toString();
+            sb.append("(default: ").append(def).append(") ");
+        }
+        
+        sb.append(getDescription()).append(System.getProperty("line.separator"));
+        
+        if(allowedValues != null && allowedValues.length != 0)
+        {
+            sb.append("   Possible values: ").append(Arrays.toString(allowedValues)).append(System.getProperty("line.separator"));
+        }
+        
+        if(preconditions != null && !preconditions.isEmpty())
+        {
+            sb.append("   Preconditions: ");
+            for(ParameterPrecondition p: preconditions)
+                sb.append(p).append("; ");
+            sb.append(System.getProperty("line.separator"));
+        }
+        sb.append(System.getProperty("line.separator"));
+        
+        return sb.toString();
     }
 }

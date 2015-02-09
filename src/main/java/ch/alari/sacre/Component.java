@@ -23,6 +23,9 @@ public abstract class Component implements Callable<Object>
     // instance name of the component
     private String name;
 
+    // description of the component, used for help messages
+    protected String description = "no description given";
+    
     // set by subclass constructor. I may enforce a way to check at compile-time that it is done
     protected String type;
 
@@ -79,6 +82,7 @@ public abstract class Component implements Callable<Object>
      * default behavior does nothing.
      * Those components that produce their output when all their input is consumed should override this method
      * to write their results to their output ports.
+     * @throws java.lang.InterruptedException
      */
     public void exiting() throws InterruptedException 
     {
@@ -157,8 +161,8 @@ public abstract class Component implements Callable<Object>
         //params = new HashMap<String, Object>();
         this.params = params;
         initSuccess = true;
-        inPorts = new ArrayList<InPort<? extends Token>>();
-        outPorts = new ArrayList<OutPort<? extends Token>>();
+        inPorts = new ArrayList<>();
+        outPorts = new ArrayList<>();
         state = State.NOT_STARTED;
         endOfStreamPolicy = EndOfStreamPolicy.STOP_WHEN_ALL_STOP_TOKENS_RECEIVED; //EndOfStreamPolicy.STOP_WHEN_FIRST_STOP_TOKEN_RECEIVED;
 //        eventQueue = new LinkedBlockingQueue<Event>();        
@@ -199,6 +203,11 @@ public abstract class Component implements Callable<Object>
         return name;
     }
  
+    protected void setDescription(String description)
+    {
+        this.description = description;
+    }
+    
     protected void setType(String type)
     {
         this.type = type;
@@ -212,7 +221,6 @@ public abstract class Component implements Callable<Object>
     /**
      * used by Pipeline.parse(). There is an assumption in the pipeline
      * syntax that for ex. in "A ! B & C" B and C are connected to the first and second port of A, respectively.
-     * @param dirType: given directional type
      * @return the next unconnected port of given directional type
      */
     public InPort<? extends Token> nextInPortToConnect()
@@ -256,6 +264,7 @@ public abstract class Component implements Callable<Object>
         return "_instance" + uniqueInstanceID++;
     }
 
+    @Override
     public Object call()
     {
         if(!initSuccess)
@@ -268,8 +277,8 @@ public abstract class Component implements Callable<Object>
                 SacreLib.logger.log(Level.SEVERE, "Error stopping components after " + type + "(instance name:" + name + ")", iex);
             }
             state = State.STOPPED;
-            //throw new InterruptedException();
-            SacreLib.logger.log(Level.SEVERE, "Error initializing component " + type + "(instance name:" + name + "). Check its parameters!");
+            SacreLib.logger.log(Level.SEVERE, "Error initializing component {0}(instance name:{1}). Check its parameters!", new Object[]{type, name});
+            //throw new ExecutionException();
             return null;
         }
         
@@ -296,12 +305,12 @@ public abstract class Component implements Callable<Object>
             {
                 if(ie.getMessage().equals("EOS")) // task exits normally at the end of stream with stopAndExit()
                 {
-                    SacreLib.logger.fine(type + "(instance name:" + name + ") thread finished.");
+                    SacreLib.logger.log(Level.FINE, "{0}(instance name:{1}) thread finished.", new Object[]{type, name});
                     return result;
                 }
                 else
                 {
-                    SacreLib.logger.fine(type + "(instance name:" + name + ") thread interrupted.");
+                    SacreLib.logger.log(Level.FINE, "{0}(instance name:{1}) thread interrupted.", new Object[]{type, name});
                     state = State.STOPPED; // not necessarily needed.
                     return null;
                 }
@@ -454,4 +463,63 @@ public abstract class Component implements Callable<Object>
         this.preconditions.addAll(Arrays.asList(preconditions));
     }
 
+    // TODO_CHECK
+    public String toHelpString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Component: ").append(getType()).append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+        
+        sb.append("           ").append(description).append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+        
+        sb.append("Input ports: ");
+        if(getInPorts().isEmpty())
+            sb.append("none");
+        sb.append(System.getProperty("line.separator"));
+        for(InPort ip: getInPorts())
+        {
+            String tokenType = Pipeline.getPortTypeOfComponentsPort(this, ip); // ch.alari.sacre.Token
+            if(tokenType != null)
+                tokenType = tokenType.substring( tokenType.lastIndexOf(".") + 1); // Token
+            else
+                tokenType = "Token"; // ONEMLI: MergeNx1 gibi bilesenlerde port tipi tespit edilemediginden null donuyor. Elle Token olarak duzeltiyorum.
+            sb.append(" - ").append(ip.getName()).append("(token type: ").append(tokenType).append(")").append(System.getProperty("line.separator"));
+        }
+        sb.append(System.getProperty("line.separator"));
+        
+        sb.append("Output ports: ");
+        if(getOutPorts().isEmpty())
+            sb.append("none");
+        sb.append(System.getProperty("line.separator"));
+        for(OutPort op: getOutPorts())
+        {
+            String tokenType = Pipeline.getPortTypeOfComponentsPort(this, op); // ch.alari.sacre.Token
+            if(tokenType != null)
+                tokenType = tokenType.substring( tokenType.lastIndexOf(".") + 1); // Token
+            else
+                tokenType = "Token"; // ONEMLI: MergeNx1 gibi bilesenlerde port tipi tespit edilemediginden null donuyor. Elle Token olarak duzeltiyorum.
+            sb.append(" - ").append(op.getName()).append("(token type: ").append(tokenType).append(")").append(System.getProperty("line.separator"));            
+        }
+        sb.append(System.getProperty("line.separator"));
+        
+        sb.append("Parameters: ");
+        if(parameters!=null)
+        {
+            sb.append(System.getProperty("line.separator"));
+            for(ParameterDescriptor pd: parameters.values())
+                sb.append(" - ").append(pd.toHelpString());
+        }
+        else
+            sb.append("none").append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));;
+        
+        
+        if(preconditions != null && !preconditions.isEmpty())
+        {
+            sb.append("Preconditions: ").append(System.getProperty("line.separator"));
+            for(ParameterPrecondition p: preconditions)
+                sb.append(" - ").append(p).append(System.getProperty("line.separator"));;
+        }
+        sb.append(System.getProperty("line.separator"));
+        
+        return sb.toString();
+    }
 }

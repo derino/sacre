@@ -36,7 +36,7 @@ public class Pipeline implements Callable<Object>
     
     private Map<String, Component> pComps;
 
-    private ComponentFactory cf;
+//    private ComponentFactory cf;
 
     // Controller needed the state variable to determine when to stop running
     public enum State {RUNNING, STOPPED};
@@ -54,7 +54,7 @@ public class Pipeline implements Callable<Object>
 
     public Pipeline()
     {
-        this.cf = null;
+        //this.cf = null;
         this.apiSinkUniqueKey = -1; // i.e. not set
         pComps = new HashMap<String, Component>();
 
@@ -62,22 +62,22 @@ public class Pipeline implements Callable<Object>
     }
 
     
-    public Pipeline(ComponentFactory cf)
-    {
-        this.cf = cf;
-        this.apiSinkUniqueKey = -1; // i.e. not set
-        pComps = new HashMap<String, Component>();
-
-        state = State.STOPPED;
-        
-        //BlockingQueue<Baslik> badiSrc_console = new LinkedBlockingQueue<Baslik>();
-        //badiSrc = new YazarSrc(badiSrc_console);
-        //console = new ConsoleSink(badiSrc_console);
-    }
+//    public Pipeline(ComponentFactory cf)
+//    {
+//        this.cf = cf;
+//        this.apiSinkUniqueKey = -1; // i.e. not set
+//        pComps = new HashMap<String, Component>();
+//
+//        state = State.STOPPED;
+//        
+//        //BlockingQueue<Baslik> badiSrc_console = new LinkedBlockingQueue<Baslik>();
+//        //badiSrc = new YazarSrc(badiSrc_console);
+//        //console = new ConsoleSink(badiSrc_console);
+//    }
     
-    public Pipeline(ComponentFactory cf, int apiSinkUniqueKey)
+    public Pipeline(/*ComponentFactory cf,*/ int apiSinkUniqueKey)
     {
-        this.cf = cf;
+//        this.cf = cf;
         this.apiSinkUniqueKey = apiSinkUniqueKey;
         pComps = new HashMap<String, Component>();
 
@@ -91,8 +91,9 @@ public class Pipeline implements Callable<Object>
     /**
      * Constructs the components and links them together as given in pStr.
      * @param pStr: pipeline string with ssg++ syntax
+     * @throws ch.alari.sacre.PipelineParseException if pipeline string cannot be parsed
      */
-    public void parse(String pStr) //TODO: throw ParseException
+    public void parse(String pStr) throws PipelineParseException
     {
         String[] stmts = pStr.split(";");
         
@@ -197,6 +198,7 @@ public class Pipeline implements Callable<Object>
     {
         String cName; // component name to be returned: ssgsrc
         String cType; // YazarSrc
+        Map<String, String> params = new HashMap<String, String>();
         
         String[] splits = cStr.split("\\[", 2);
         cType = splits[0].trim();
@@ -207,7 +209,7 @@ public class Pipeline implements Callable<Object>
             if(pComps.get(cName) == null) // if not yet created
             {
                 cName += Component.getUniqueInstanceID();
-                Component c = createComponentFromComponentFactory( cType, cName, null ); // without a 'name' parameter, components take the component type as name.
+                Component c = createComponentFromComponentFactory( cType, cName, params ); // without a 'name' parameter, components take the component type as name.
                 pComps.put(cName, c);
             }
         }
@@ -215,8 +217,6 @@ public class Pipeline implements Callable<Object>
         // else there are parameters to be parsed.
         else
         {
-            Map<String, String> params = new HashMap<String, String>();
-
             splits[1] = splits[1].trim();
             // TODO: error checking of given string
             //if( splits[1].substring(splits[1].length()-1).equals("\\]") )
@@ -247,12 +247,12 @@ public class Pipeline implements Callable<Object>
             {
                 if(!nameSpecified)
                 {
-                    try{
+//                    try{
                         cName += Component.getUniqueInstanceID();
-                    }catch(Throwable t)
-                        {
-                            t.printStackTrace();
-                        }
+//                    }catch(Throwable t)
+//                        {
+//                            t.printStackTrace();
+//                        }
                 }
                 pComps.put(cName, createComponentFromComponentFactory(cType, cName, params));
             }
@@ -272,10 +272,10 @@ public class Pipeline implements Callable<Object>
             ((ApiSink)c).setUniqueKey(apiSinkUniqueKey);
         }
         // then the external
-        if(c == null && cf != null)
-        {
-            c = cf.create(cType, cName, params);
-        }
+//        if(c == null && cf != null)
+//        {
+//            c = cf.create(cType, cName, params);
+//        }
         return c;
     }
 
@@ -288,14 +288,14 @@ public class Pipeline implements Callable<Object>
                 OutPort portPrevComp = pComps.get(prevComp).nextOutPortToConnect();
                 if(portPrevComp == null)
                     continue;
-                String portTypePrev = getPortTypeOfComponentsPort( pComps.get(prevComp), portPrevComp, "OutPort");
+                String portTypePrev = getPortTypeOfComponentsPort( pComps.get(prevComp), portPrevComp/*, "OutPort"*/);
                 //String portTypePrev = getPortTokenType(portPrevComp); // could not come up with such a function. That information does not exist at run-time.
                 //System.out.println("portTypePrev: " + portTypePrev);
                 
                 InPort portNewComp = pComps.get(newComp).nextInPortToConnect();
                 if(portNewComp == null)
                     continue;     //SacreLib.logger.log(Level.SEVERE, "attempted to connect non-existing ports: " + pComps.get(prevComp).getName() + " <-> " + pComps.get(newComp).getName() );
-                String portTypeNew = getPortTypeOfComponentsPort( pComps.get(newComp), portNewComp, "InPort");
+                String portTypeNew = getPortTypeOfComponentsPort( pComps.get(newComp), portNewComp/*, "InPort"*/);
                 //String portTypeNew = getPortTokenType(portNewComp); // could not come up with such a function. That information does not exist at run-time.
                 //System.out.println("portTypeNew: " + portTypeNew);
                 
@@ -348,7 +348,7 @@ public class Pipeline implements Callable<Object>
         }
     }
     
-    private String getPortTypeOfComponentsPort(Component comp, Port port, String inport_outport) throws SecurityException, IllegalArgumentException {
+    public static String getPortTypeOfComponentsPort(Component comp, Port port/*, String inport_outport*/) throws SecurityException, IllegalArgumentException {
         Class<?> c = comp.getClass();
         //System.out.println("class: " + c.getName());
         Field[] fields = c.getDeclaredFields();
@@ -367,7 +367,7 @@ public class Pipeline implements Callable<Object>
         
         for (Field f: allFields) //(Field f : fields)
         {
-            if (f.getType().getSimpleName().equals(inport_outport)) {
+            if (f.getType().getSimpleName().equals("InPort") || f.getType().getSimpleName().equals("OutPort")) { // f.getType().getSimpleName().equals(inport_outport)
                 //System.out.println(f.getName() + ": " + f.getType());
                 f.setAccessible(true);
                 try {
@@ -395,6 +395,7 @@ public class Pipeline implements Callable<Object>
         return null;
     }
         
+    @Override
     public Object call()
     {
         state = State.RUNNING;
@@ -419,42 +420,42 @@ public class Pipeline implements Callable<Object>
             //while(!allDone)
             //{
             
-                for(String s: fMap.keySet())
+            for(String s: fMap.keySet())
+            {
+                SacreLib.logger.log(Level.FINE, "Thread {0}", s);
+                try
                 {
-                    SacreLib.logger.fine("Thread " + s);
-                    try
-                    {
-                        Object res = fMap.get(s).get();
-                        
-                        if( res != null)
-                        {
-                            pipelineResult = res;
-                        }
-                        SacreLib.logger.fine("Thread(" + s + ") executed successfully!");
-                    }
-                    catch(ExecutionException ee)
-                    {
-                        SacreLib.logger.log(Level.WARNING, "Exception occurred in Thread(" + s + ")!", ee);
-                    }
-                }
+                    Object res = fMap.get(s).get();
 
-                for(String s: fMap.keySet())
-                {
-                    SacreLib.logger.fine("Thread " + s);
-                    try
+                    if( res != null)
                     {
-                        Object res = fMap.get(s).get();
-                        if( res != null)
-                        {
-                            pipelineResult = res;
-                        }
-                        SacreLib.logger.fine("Thread(" + s + ") executed successfully!");
+                        pipelineResult = res;
                     }
-                    catch(ExecutionException ee)
-                    {
-                        SacreLib.logger.log(Level.WARNING, "Exception occurred in Thread(" + s + ")!", ee);
-                    }
+                    SacreLib.logger.log(Level.FINE, "Thread({0}) executed successfully!", s);
                 }
+                catch(ExecutionException ee)
+                {
+                    SacreLib.logger.log(Level.WARNING, "Exception occurred in Thread(" + s + ")!", ee);
+                }
+            }
+
+            for(String s: fMap.keySet())
+            {
+                SacreLib.logger.log(Level.FINE, "Thread {0}", s);
+                try
+                {
+                    Object res = fMap.get(s).get();
+                    if( res != null)
+                    {
+                        pipelineResult = res;
+                    }
+                    SacreLib.logger.log(Level.FINE, "Thread({0}) executed successfully!", s);
+                }
+                catch(ExecutionException ee)
+                {
+                    SacreLib.logger.log(Level.WARNING, "Exception occurred in Thread(" + s + ")!", ee);
+                }
+            }
 
 //                boolean allDone = true;
 //                for(String s: fMap.keySet())

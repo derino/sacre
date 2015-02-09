@@ -22,8 +22,13 @@ public class NegatedPrecondition implements ParameterPrecondition {
         return !pp.test();
     }
 
+    // ideal degil. her durumda dogru sonuc vermez. or. NOT(AND(a,b)
     @Override
     public String toString() {
-        return "!(" + pp + ")";
+        String res = pp.toString().replace(" is ", " is not ").replace("=", " is not ").replace(" is not not ", " is ");
+        if(res.equals(pp.toString()))
+            return "!(" + pp + ")";
+        else
+            return res;
     }
 }

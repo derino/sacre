@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -24,6 +28,28 @@ public class SacreLib
 
     static
     {
+        init(Level.WARNING); // TODO: when being debugged LEVEL.FINE, when released LEVEL.WARNING
+//        // Initialize logger
+//        try
+//        {
+//          LogManager lm = LogManager.getLogManager();
+//
+//          lm.addLogger(logger);
+//          logger.setLevel(Level.ALL);
+//
+//        // level of log messages on console = >INFO
+//        for(Handler h: Logger.getLogger("").getHandlers())
+//            h.setLevel(Level.WARNING); // TODO: when being debugged LEVEL.FINE, when released LEVEL.WARNING
+//        }
+//        catch (Exception e)
+//        {
+//          System.out.println("Logger initialization failed. Exception thrown: " + e);
+////          e.printStackTrace();
+//        }
+    }
+    
+    public static void init(Level debugLevel)
+    {
         // Initialize logger
         try
         {
@@ -34,12 +60,12 @@ public class SacreLib
 
         // level of log messages on console = >INFO
         for(Handler h: Logger.getLogger("").getHandlers())
-            h.setLevel(Level.WARNING); // TODO: when being debugged LEVEL.FINE, when released LEVEL.WARNING
+            h.setLevel(debugLevel); // TODO: when being debugged LEVEL.FINE, when released LEVEL.WARNING
         }
         catch (Exception e)
         {
           System.out.println("Logger initialization failed. Exception thrown: " + e);
-          e.printStackTrace();
+//          e.printStackTrace();
         }
     }
     
@@ -87,23 +113,72 @@ public class SacreLib
     
     public static synchronized void addApiSinkListener(int apiSinkUniqueKey, ApiSinkListener apl)
     {
-        Integer apiSinkUniqueKeyInteger = new Integer(apiSinkUniqueKey);
+        Integer apiSinkUniqueKeyInteger = apiSinkUniqueKey;
         List<ApiSinkListener> apls = mapApiSinkListeners.get(apiSinkUniqueKeyInteger);
         if(apls == null)
-        {
-            apls = new ArrayList<ApiSinkListener>();
-        }
+            apls = new ArrayList<>();
         apls.add(apl);
         mapApiSinkListeners.put(apiSinkUniqueKeyInteger, apls);
     }
     
     public static synchronized List<ApiSinkListener> getApiSinkListeners(int apiSinkUniqueKey)
     {
-        return mapApiSinkListeners.get(new Integer(apiSinkUniqueKey));
+        return mapApiSinkListeners.get(apiSinkUniqueKey);
     }
     
     public static synchronized void clearApiSinkListeners(int apiSinkUniqueKey)
     {
         getApiSinkListeners(apiSinkUniqueKey).clear();
+    }
+    
+    public static void addComponentFactory(ComponentFactory cf)
+    {
+        SacreComponentFactory.addComponentFactory(cf);
+    }
+    
+    public static Object runPipeline(String pStr)
+    {
+        return runPipeline(pStr, -1);
+    }
+    
+    // moved from EksiSozlukUtilities
+    public static Object runPipeline(String pStr, int apiSinkUniqueKey)
+    {
+        SacreLib.logger.log(Level.FINE, "run pipeline:{0}", pStr);
+        // String pStr = "BaslikSrc [baslik=tribundergi.com] ! Baslik2EntryCvt ! ConsoleSink";
+
+        ExecutorService e = Executors.newCachedThreadPool();
+        Pipeline pipeline = new Pipeline(/*EksiSozlukComponentFactory.instance(),*/ apiSinkUniqueKey);
+        
+        try 
+        {
+            pipeline.parse(pStr);
+        } 
+        catch (PipelineParseException ex) {
+            SacreLib.logger.log(Level.WARNING, "Pipeline cannot be parsed!");
+        }
+        
+        Future<?> futurePipeline = e.submit(pipeline);
+        e.shutdown();
+
+        Object res = null;
+        try
+        {
+            res = futurePipeline.get();
+            if(res != null)
+                SacreLib.logger.fine("Pipeline executed successfully!");
+//            else // bu sekilde bakmak dogru degildi
+//                SacreLib.logger.warning("Pipeline did not produce any results!");
+            /*if( futurePipeline.get() == null)
+            {
+                EksiSozlukUtilities.logger.fine("Pipeline executed successfully!");
+            }*/
+        }
+        catch(ExecutionException | InterruptedException ee)
+        {
+            SacreLib.logger.log(Level.WARNING, "Exception occurred in Pipeline!", ee);
+        }
+        
+        return res;
     }
 }
