@@ -54,7 +54,8 @@ public class Intersection extends Component
     public Intersection(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("Intersection");
+        setType("intersection");
+        setDescription("İki girdi kapısındaki verilerin kesişim kümesini çıktı kapısına gönderir.");
         
         in1 = new InPort<>(this);
         in2 = new InPort<>(this);

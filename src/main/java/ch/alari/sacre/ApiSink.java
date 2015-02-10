@@ -67,7 +67,8 @@ public class ApiSink extends Component
     public ApiSink(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("APISink");
+        setType("apisink");
+        setDescription("Geliştiricilerin işhattı sonuçlarını fonksiyon sonucu olarak almasını sağlar. Tip parametresi senkron olarak verildiğinde döndürülen sonuç apisink bileşenine giren tüm tokenlerin bir listesidir. Asenkron olarak verildiğinde öncesinde dinleyici olarak eklenmiş nesneler her yeni token geldiğinde ve iş hattı tamamlandığında haberdar edilir.");
         
         in = new InPort<>(this);
         
@@ -75,6 +76,7 @@ public class ApiSink extends Component
         String[] tipDomain = {"senkron", "asenkron"};
         InteractionType[] tipRange  = InteractionType.values();        
         tip = new ParameterDescriptor<>(this, "tip", false, tipRange[0], new DictionaryConverter<>(tipDomain, tipRange), tipDomain);
+        tip.setDescription("Sonuçların alınma şeklini belirler.");
         
         // result is defined in Component. 
         // After the component thread ends, result is returned to the Pipeline, 

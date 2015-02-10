@@ -52,13 +52,15 @@ public class LimitFilter extends Component
     public LimitFilter(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("LimitFlt");
+        setType("limitflt");
+        setDescription("Yalnızca limit parametresi ile verilen sayıdaki tokeni girdi kapısından çıktı kapısına geçirir.");
         
         in = new InPort<>(this);
         out = new OutPort<>(this);
     
         // define limit
         limit = new ParameterDescriptor<>(this, "limit", false, 1L, ParameterDescriptor.longConverter);
+        limit.setDescription("Geçirilecek en fazla token sayısını belirler.");
         
         count = 0;
         

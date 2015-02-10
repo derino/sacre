@@ -49,12 +49,14 @@ public class MergeNx1 extends Component
     public MergeNx1(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("MergeNx1");
+        setType("mergenx1");
+        setDescription("Giriş kapılarındaki tokenleri tek bir çıkış kapısına gönderir.");
         
         out = new OutPort<>(this);
         
         // define n
         n = new ParameterDescriptor<>(this, "n", false, 2, ParameterDescriptor.integerConverter);
+        n.setDescription("Giriş kapısı adedi.");
         
         // set parameters
         initParameters();

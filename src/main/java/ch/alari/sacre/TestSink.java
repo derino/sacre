@@ -51,7 +51,7 @@ public class TestSink extends Component
     public TestSink(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("TestBtk");
+        setType("testbtk");
         in = new InPort<>(this);
     }
     

@@ -51,12 +51,14 @@ public class Fork1xN extends Component
     public Fork1xN(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("Fork1xN");
+        setType("fork1xn");
+        setDescription("Girdi kapısındaki veriyi kopyalayarak her bir çıktı kapısına gönderir.");
         in = new InPort<>(this);
         
         // define n
         n = new ParameterDescriptor<>(this, "n", false, 2, ParameterDescriptor.integerConverter);
-
+        n.setDescription("Çıkış kapısı adedi.");
+        
         // - this can be a method in Component which calls setValue for all parameters.
         // initParameters(parameters)
         // - change to super(name, parameters)

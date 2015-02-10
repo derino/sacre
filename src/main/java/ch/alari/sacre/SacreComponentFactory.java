@@ -88,7 +88,7 @@ public class SacreComponentFactory implements ComponentFactory
     
     private final String[][] componentsMap = { 
         {"merge",                "mergenx1",                "merge3x1",                "merge8x1",                "intersection",                "fork",                "fork1x3",                "fork1xn",                "gnd",                   "apisink",                "limitflt",                "testknk",                "testcvt",                "testbtk"},
-        {"ch.alari.sacre.Merge", "ch.alari.sacre.MergeNx1", "ch.alari.sacre.Merge3x1", "ch.alari.sacre.Merge8x1", "ch.alari.sacre.Intersection", "ch.alari.sacre.Fork", "ch.alari.sacre.Fork1x3", "ch.alari.sacre.Fork1xN", "ch.alari.sacre.Ground", "ch.alari.sacre.ApiSink", "ch.alari.sacre.LimitFlt", "ch.alari.sacre.TestSrc", "ch.alari.sacre.TestCvt", "ch.alari.sacre.TestSink"}
+        {"ch.alari.sacre.Merge", "ch.alari.sacre.MergeNx1", "ch.alari.sacre.Merge3x1", "ch.alari.sacre.Merge8x1", "ch.alari.sacre.Intersection", "ch.alari.sacre.Fork", "ch.alari.sacre.Fork1x3", "ch.alari.sacre.Fork1xN", "ch.alari.sacre.Ground", "ch.alari.sacre.ApiSink", "ch.alari.sacre.LimitFilter", "ch.alari.sacre.TestSrc", "ch.alari.sacre.TestCvt", "ch.alari.sacre.TestSink"}
     };
     
     /**

@@ -56,7 +56,7 @@ public class TestSrc extends Component
     public TestSrc(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("TestKnk");
+        setType("testknk");
         this.out = new OutPort<>(this);
         
         basliklar = new ArrayList<String>();

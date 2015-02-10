@@ -52,7 +52,7 @@ public class TestCvt extends Component
         super(name, params);
         in = new InPort<>(this);
         out = new OutPort<>(this);
-        setType("TestCvt");
+        setType("testcvt");
         
         if(params != null)
         {

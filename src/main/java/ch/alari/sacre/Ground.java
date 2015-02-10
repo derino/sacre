@@ -47,7 +47,8 @@ public class Ground extends Component
     public Ground(String name, Map<String, String> params)
     {
         super(name, params);
-        setType("GND");
+        setType("gnd");
+        setDescription("Girdi kapısındaki verileri alır ve onlarla hiçbir şey yapmaz.");
         
         in = new InPort<>(this);
     }

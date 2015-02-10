@@ -324,4 +324,53 @@ public class ParameterDescriptor<T>
         
         return sb.toString();
     }
+    
+    public String toOrgString()
+    {
+        StringBuilder sb = new StringBuilder();
+//        sb.append("| parametre | varsayılan değeri | açıklama | alabildiği değerler | önkoşulları |");
+        sb.append("| ").append(getName()).append(" ");
+        
+        if(required)
+            sb.append("(zorunlu) | ");
+        else
+        {
+            String def;
+            if(defaultValue == null)
+                def = "yok";
+            else if(defaultValue.getClass().isArray())
+                def = Arrays.toString((Object[])defaultValue);
+            else if(defaultValue instanceof Calendar)
+            {
+                Calendar cal = ((Calendar)defaultValue);
+                String gun = cal.get(Calendar.DAY_OF_MONTH) + ".";
+                gun += (cal.get(Calendar.MONTH)+1) + ".";
+                gun += cal.get(Calendar.YEAR);
+                def = gun;
+            }   
+            else
+                def = defaultValue.toString();
+            sb.append("| ").append("~").append(def).append("~").append(" | ");
+        }
+        
+        sb.append(getDescription()).append(" | ");
+        
+        if(allowedValues != null && allowedValues.length != 0)
+        {
+            sb.append(Arrays.toString(allowedValues)).append(" | ");
+        }
+        else
+            sb.append(" | ");
+        
+        if(preconditions != null && !preconditions.isEmpty())
+        {
+            //sb.append("   Preconditions: ");
+            for(ParameterPrecondition p: preconditions)
+                sb.append(p).append("; ");
+        }
+        sb.append(" | ");
+        sb.append(System.getProperty("line.separator"));
+        
+        return sb.toString();
+    }
 }

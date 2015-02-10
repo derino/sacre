@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -463,7 +464,6 @@ public abstract class Component implements Callable<Object>
         this.preconditions.addAll(Arrays.asList(preconditions));
     }
 
-    // TODO_CHECK
     public String toHelpString()
     {
         StringBuilder sb = new StringBuilder();
@@ -521,5 +521,148 @@ public abstract class Component implements Callable<Object>
         sb.append(System.getProperty("line.separator"));
         
         return sb.toString();
+    }
+    
+    public String toOrgString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("** ").append(getType().toLowerCase(Locale.forLanguageTag("tr"))).append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+        sb.append(" :PROPERTIES:").append(System.getProperty("line.separator"));
+        sb.append("    :CUSTOM_ID: ").append( getType().toLowerCase(Locale.forLanguageTag("tr")) ).append(System.getProperty("line.separator"));
+        sb.append(" :END:").append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+        sb.append("| Adı | ").append(getType().toLowerCase(Locale.forLanguageTag("tr"))).append(" |").append(System.getProperty("line.separator"));
+        
+        sb.append("| İşlevi | ").append(description).append(" |").append(System.getProperty("line.separator"));
+        
+        List<String> inportTypes = new ArrayList<>(); // used for visualization of the component
+        sb.append("| Giriş Kapısı | ");
+        if(getInPorts().isEmpty())
+            sb.append("yok |");
+        else
+            sb.append(getInPorts().size()).append(" |");
+        sb.append(System.getProperty("line.separator"));
+        for(InPort ip: getInPorts())
+        {
+            String tokenType = Pipeline.getPortTypeOfComponentsPort(this, ip); // ch.alari.sacre.Token
+            if(tokenType != null)
+                tokenType = tokenType.substring( tokenType.lastIndexOf(".") + 1); // Token
+            else
+                tokenType = "Token"; // ONEMLI: MergeNx1 gibi bilesenlerde port tipi tespit edilemediginden null donuyor. Elle Token olarak duzeltiyorum.
+            sb.append("|  | ").append(ip.getName()).append("(token tipi: ").append(tokenType).append(")").append(" |").append(System.getProperty("line.separator"));
+            inportTypes.add(tokenType);
+        }
+        
+        List<String> outportTypes = new ArrayList<>(); // used for visualization of the component
+        sb.append(" | Çıkış kapısı | ");
+        if(getOutPorts().isEmpty())
+            sb.append("yok |");
+        else
+            sb.append(getOutPorts().size()).append(" |");
+        sb.append(System.getProperty("line.separator"));
+        for(OutPort op: getOutPorts())
+        {
+            String tokenType = Pipeline.getPortTypeOfComponentsPort(this, op); // ch.alari.sacre.Token
+            if(tokenType != null)
+                tokenType = tokenType.substring( tokenType.lastIndexOf(".") + 1); // Token
+            else
+                tokenType = "Token"; // ONEMLI: MergeNx1 gibi bilesenlerde port tipi tespit edilemediginden null donuyor. Elle Token olarak duzeltiyorum.
+            sb.append("|  | ").append(op.getName()).append("(token tipi: ").append(tokenType).append(")").append(" |").append(System.getProperty("line.separator"));
+            outportTypes.add(tokenType);
+        }
+        sb.append(System.getProperty("line.separator"));
+                
+        sb.append("Parametreleri: ");
+        if(parameters!=null)
+        {
+            sb.append(System.getProperty("line.separator"));
+            sb.append("| parametre | varsayılan değeri | açıklama | alabildiği değerler | önkoşulları |").append(System.getProperty("line.separator"));
+            sb.append("| <l>       |                   |          |                     |             |").append(System.getProperty("line.separator"));
+            sb.append("|-----------+-------------------+----------+---------------------+-------------|").append(System.getProperty("line.separator"));
+            
+            for(ParameterDescriptor pd: parameters.values())
+                sb.append(pd.toOrgString());
+        }
+        else
+            sb.append("yok").append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));;
+        
+        
+        if(preconditions != null && !preconditions.isEmpty())
+        {
+            sb.append("Önkoşulları: ").append(System.getProperty("line.separator"));
+            for(ParameterPrecondition p: preconditions)
+                sb.append(" - ").append(p).append(System.getProperty("line.separator"));
+        }
+        
+        String compName = getType().toLowerCase(Locale.forLanguageTag("tr"));
+        int boxWidth = compName.length()+2; // 2: one space before and after the name
+        int arrowLength = 5;
+        int picLeftMargin = arrowLength; // for components wo/ input ports
+        if(!inportTypes.isEmpty())
+            picLeftMargin = arrowLength + inportTypes.get(0).length(); // ideal olarak tum token tiplerinden en uzun olana gore belirlenmeli.
+        int picRightMargin = arrowLength; // for components wo/ output ports
+        if(!outportTypes.isEmpty())
+            picRightMargin = arrowLength + outportTypes.get(0).length(); // ideal olarak tum token tiplerinden en uzun olana gore belirlenmeli.
+        sb.append("Görsel gösterimi: ").append(System.getProperty("line.separator"));
+        sb.append("#+BEGIN_SRC ditaa :file imgs/dit-").append(compName).append(".png :cmdline -r -s 0.8").append(System.getProperty("line.separator"));
+        printChar(sb, picLeftMargin, ' '); printChar(sb, 1, '+'); printChar(sb, boxWidth, '-'); printChar(sb, 1, '+'); printChar(sb, picRightMargin, ' '); sb.append(System.getProperty("line.separator"));
+        printChar(sb, picLeftMargin, ' '); sb.append("| ").append(compName); printChar(sb, boxWidth-compName.length()-1, ' '); printChar(sb, 1, '|'); printChar(sb, picRightMargin, ' '); sb.append(System.getProperty("line.separator"));
+        
+        for(int i=0; i< Integer.max(inportTypes.size(), outportTypes.size()); i++)
+        {
+            if(i<inportTypes.size()) // we have an input port to draw
+            {
+                // name
+                sb.append(inportTypes.get(i)); printChar(sb, arrowLength, ' '); sb.append("|"); printChar(sb, boxWidth, ' '); sb.append("|");
+            }
+            else
+            {
+                // empty
+                printChar(sb, picLeftMargin, ' '); sb.append("|"); printChar(sb, boxWidth, ' '); sb.append("|");
+            }
+            if(i<outportTypes.size()) // we have an input port to draw
+            {
+                // name
+                printChar(sb, arrowLength+1, ' '); sb.append(outportTypes.get(i));
+            }
+            sb.append(System.getProperty("line.separator"));
+            
+            if(i<inportTypes.size())
+            {
+                // line
+                printChar(sb, picLeftMargin-arrowLength, ' '); printChar(sb, arrowLength, '-'); sb.append("+>"); printChar(sb, boxWidth-1, ' '); sb.append("|");
+            }
+            else
+            {
+                // empty
+                printChar(sb, picLeftMargin, ' '); sb.append("|"); printChar(sb, boxWidth, ' '); sb.append("|");
+            }
+            if(i<outportTypes.size()) // we have an input port to draw
+            {
+                // line
+                sb.append(">"); printChar(sb, arrowLength, '-');
+            }
+            sb.append(System.getProperty("line.separator"));
+        }
+        
+        printChar(sb, picLeftMargin, ' '); sb.append("|"); printChar(sb, boxWidth, ' '); printChar(sb, 1, '|'); printChar(sb, picRightMargin, ' '); sb.append(System.getProperty("line.separator"));
+        printChar(sb, picLeftMargin, ' '); printChar(sb, 1, '+'); printChar(sb, boxWidth, '-'); printChar(sb, 1, '+'); printChar(sb, picRightMargin, ' '); sb.append(System.getProperty("line.separator"));
+        
+//        sb.append("                 +----------------+                 ");
+//        sb.append("                 | compNameeeeeee |                 ");
+//                            
+//        sb.append("                 |                |                 ");
+//        sb.append("                 +----------------+                 ");
+        sb.append(System.getProperty("line.separator")).append("#+END_SRC");
+        
+        
+        sb.append(System.getProperty("line.separator"));
+        
+        return sb.toString();
+    }
+    
+    private void printChar(StringBuilder sb, int n, char x)
+    {
+        for(int i=0; i<n; i++)
+            sb.append(x);
     }
 }
