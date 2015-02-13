@@ -159,7 +159,7 @@ public class ParameterDescriptor<T>
     // main method to be used to set parameter's value
     public void setValue(String valStr) throws UnallowedParameterValueException, RequiredParameterNotSuppliedException, PreconditionsNotMetException
     {
-        if(preconditions != null)
+        if(preconditions != null && valStr != null)
         {
             boolean metAll = true;
             for(ParameterPrecondition p: preconditions)

@@ -78,6 +78,8 @@ public class ApiSink extends Component
         tip = new ParameterDescriptor<>(this, "tip", false, tipRange[0], new DictionaryConverter<>(tipDomain, tipRange), tipDomain);
         tip.setDescription("Sonuçların alınma şeklini belirler.");
         
+        initParameters();
+        
         // result is defined in Component. 
         // After the component thread ends, result is returned to the Pipeline, 
         // which in turn returns it to the original pipeline runner when pipeline thread ends.
@@ -106,6 +108,7 @@ public class ApiSink extends Component
 //            tip = InteractionType.SYNCHRONOUS;
     }
     
+    @Override
     public void task() throws InterruptedException, Exception
     {
         // notify the listeners about pipelineStr before execution just for once.

@@ -433,6 +433,9 @@ public abstract class Component implements Callable<Object>
         {
             initSuccess = false;
         }
+        
+        //        for(ParameterDescriptor pd: parameters.values())
+        //            System.out.println(pd.getName() + "=" + pd.getValue());
     }
     
     
